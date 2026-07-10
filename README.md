@@ -1,20 +1,27 @@
 # libGDX Web Sockets
 
-Fork of [czyzby's websockets](https://github.com/czyzby/gdx-lml/tree/master/websocket), which seem to be unmaintained.
+Maintained fork of [MrStahlfelge/gdx-websockets](https://github.com/MrStahlfelge/gdx-websockets), which itself forked [czyzby's websockets](https://github.com/czyzby/gdx-lml/tree/master/websocket).
 
-See there for examples.
+This fork preserves SimonIT's TeaVM implementation, keeps the existing API shape for libGDX projects, and serves as the home for ongoing compatibility updates.
 
 Default libGDX `Net` API provides only TCP sockets and HTTP requests. This library aims to add client-side web sockets support.
 It works on all platforms targeted by libGDX.
 
+## Fork goals
+- Publish JitPack artifacts from `deedywu/gdx-websockets`
+- Keep TeaVM support available and maintained
+- Stay close to the original API so existing libGDX projects can migrate with minimal changes
+
 ## Dependencies
-If you don't have already, add Jitpack to your repositories in root `build.gradle` file:
+If you do not already have it, add JitPack to the repositories in your root `build.gradle` file:
 
         maven { url "https://jitpack.io" }
 
+Use `com.github.deedywu.gdx-websockets` as the dependency group and the module name as the artifact ID.
+
 `Gradle` dependency (for libGDX core project):
 ```
-         implementation "com.github.MrStahlfelge.gdx-websockets:core:$wsVersion"
+         implementation "com.github.deedywu.gdx-websockets:core:$wsVersion"
 ```
 
 GWT module:
@@ -24,7 +31,7 @@ GWT module:
 
 Desktop/Android/iOS:
 ```
-         implementation "com.github.MrStahlfelge.gdx-websockets:common:$wsVersion"
+         implementation "com.github.deedywu.gdx-websockets:common:$wsVersion"
 ```
 
 (based on [nv-websocket-client](https://github.com/TakahikoKawasaki/nv-websocket-client))
@@ -32,9 +39,9 @@ Desktop/Android/iOS:
 ### GWT (Web)
 `Gradle` dependency for libGDX html project
 ```
-        implementation "com.github.MrStahlfelge.gdx-websockets:core:$wsVersion:sources"
-        implementation "com.github.MrStahlfelge.gdx-websockets:html:$wsVersion"
-        implementation "com.github.MrStahlfelge.gdx-websockets:html:$wsVersion:sources"
+        implementation "com.github.deedywu.gdx-websockets:core:$wsVersion:sources"
+        implementation "com.github.deedywu.gdx-websockets:html:$wsVersion"
+        implementation "com.github.deedywu.gdx-websockets:html:$wsVersion:sources"
 ```
 
 GWT module (GdxDefinition.gwt.xml):
@@ -44,20 +51,24 @@ GWT module (GdxDefinition.gwt.xml):
 
 ### TeaVM (Web)
 
+This module is based on the TeaVM work originally contributed by SimonIT.
+
 `Gradle` dependency for libGDX teavm project
 ```
-        implementation "com.github.MrStahlfelge.gdx-websockets:teavm:$wsVersion"
+        implementation "com.github.deedywu.gdx-websockets:teavm:$wsVersion"
 ```
 
 ### Version
 
-Specify the `wsVersion` in the `gradle.properties` file in the root directory:
+Specify the `wsVersion` in the `gradle.properties` file in the root directory. Use a tag, branch snapshot, or commit published from this fork:
 
-`wsVersion=1.9.10.3` (or the latest version)
+`wsVersion=2.0.0`
+
+`wsVersion=master-SNAPSHOT`
 
 ### Extensions
 
-- [gdx-websocket-serialization](https://github.com/MrStahlfelge/gdx-websockets/tree/master/serialization): a custom serialization mechanism, not based on reflection. Alternative to JSON-based communication. More verbose, but gives you full control over (de)serialization process. Useful for performance-critical applications.
+- [gdx-websocket-serialization](serialization): a custom serialization mechanism, not based on reflection. Alternative to JSON-based communication. More verbose, but gives you full control over the serialization process. Useful for performance-critical applications.
 
 ## Basic usage
 
@@ -94,7 +105,7 @@ In TeaVMLauncher, make sure to call `TeaWebSockets.initiate()` before creating w
 ```
         WebSocket socket = WebSockets.newSocket(WebSockets.toWebSocketUrl(address, port));
         socket.setSendGracefully(true);
-        socket.addListener(new WebsocketListener() { ... });
+        socket.addListener(new WebSocketListener() { ... });
         socket.connect();
 ```
 
@@ -107,5 +118,5 @@ In TeaVMLauncher, make sure to call `TeaWebSockets.initiate()` before creating w
 - Added default `Serializer` implementation: `JsonSerializer`. Uses **LibGDX** `Json` API to serialize objects as strings.
 - Added `WebSockets#DEFAULT_SERIALIZER`. Modify this field to automatically assign serializer of your choice to all new web socket instances.
 - Added `Base64Serializer`. Uses **LibGDX** `Base64Coder` API to encode and decode the data to and from *BASE64*. Wraps around an existing serializer.
-- Added custom serialization in [gdx-websocket-serialization](natives/serialization) library. `ManualSerializer` is an alternative to the default `JsonSerializer`.
+- Added custom serialization in [gdx-websocket-serialization](serialization). `ManualSerializer` is an alternative to the default `JsonSerializer`.
 - Added `WebSockets#closeGracefully(WebSocket)` null-safe utility method. Attempts to close the passed web socket and catches any thrown exceptions (their message is logged using `Gdx.app.debug` method). If passed web socket is null, it will be ignored. Useful for application disposing methods, when you don't exactly care if the web socket is not properly closed and *have to* continue disposing other native assets, even if `close()` call fails.

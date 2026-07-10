@@ -10,12 +10,18 @@ GWT natives for [LibGDX Web Sockets](../..). Make sure to call `GwtWebSockets.in
 ```
 
 ## Dependencies
+Add JitPack to your repositories:
+```
+        maven { url "https://jitpack.io" }
+```
+
 `Gradle` dependency (for GWT LibGDX project):
 ```
-        compile "com.github.czyzby:gdx-websocket-gwt:$libVersion.$gdxVersion"
-        compile "com.github.czyzby:gdx-websocket-gwt:$libVersion.$gdxVersion:sources"
+        implementation "com.github.deedywu.gdx-websockets:core:$wsVersion:sources"
+        implementation "com.github.deedywu.gdx-websockets:html:$wsVersion"
+        implementation "com.github.deedywu.gdx-websockets:html:$wsVersion:sources"
 ```
-`$libVersion` is the current version of the library, usually following `MAJOR.MINOR` schema. `$gdxVersion` is the LibGDX version used to build (and required by) the library. You can check the current library version [here](http://search.maven.org/#search|ga|1|g%3A%22com.github.czyzby%22) - or you can use the [snapshots](https://oss.sonatype.org/content/repositories/snapshots/com/github/czyzby/).
+Set `wsVersion` to a tag, branch snapshot, or commit published from `deedywu/gdx-websockets`.
 
 GWT module:
 ```
