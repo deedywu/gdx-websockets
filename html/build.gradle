@@ -10,7 +10,3 @@ dependencies {
   implementation "com.badlogicgames.gdx:gdx:$gdxVersion:sources"
   implementation "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion:sources"
 }
-
-java {
-  withSourcesJar()
-}

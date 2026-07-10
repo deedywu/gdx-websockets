@@ -4,14 +4,17 @@ Most simple projects will do just fine using JSON-based communication thanks to 
 
 ## Including `gdx-websocket-serialization`
 
-See [example project](../../../examples/gdx-websocket-serialization-tests). This [project](../../../examples/gdx-websocket-serialization-compare) allows you to compare basic string communication, JSON messages and our custom serialization.
-
 ### Dependencies
+Add JitPack to your repositories:
+```
+        maven { url "https://jitpack.io" }
+```
+
 `Gradle` dependency (for LibGDX core project):
 ```
-         compile "com.github.czyzby:gdx-websocket-serialization:$libVersion.$gdxVersion"
+         implementation "com.github.deedywu.gdx-websockets:serialization:$wsVersion"
 ```
-`$libVersion` is the current version of the library, usually following `MAJOR.MINOR` schema. `$gdxVersion` is the LibGDX version used to build (and required by) the library. You can check the current library version [here](http://search.maven.org/#search|ga|1|g%3A%22com.github.czyzby%22) - or you can use the [snapshots](https://oss.sonatype.org/content/repositories/snapshots/com/github/czyzby/).
+Set `wsVersion` to a tag, branch snapshot, or commit published from `deedywu/gdx-websockets`.
 
 GWT module:
 ```
@@ -103,4 +106,4 @@ We might be saving just 2 lousy bytes there, but when it comes to transferring h
 
 You could ask "why not just use `serializeShort` method?" - and you're correct, you can. But by specifying the initial data type, A) the number conversion is handled for you, and B) the least possible amount of bytes is used for the value. For example, if you try serializing int as long: `serializeInt(value, Size.LONG)`, only 4 bytes will be used, as this is the actual int length in bytes. `serializeLong(value)` would use 8 bytes, even if the initial `value` type is int, as JVM silently converts int to a long. This is more of a bug prevention feature, but can be helpful. The choice is yours, use whatever you consider more readable.
 
-Make sure to check out the [example project](../../../examples/gdx-websocket-serialization-tests).
+See the root [README](../README.md) for the general setup and initialization flow.

@@ -20,9 +20,5 @@ sourceCompatibility = 1.8
 
 
 ext {
-	ARTIFACTID = 'gdx-controllers-core'
-}
-
-java {
-	withSourcesJar()
+	ARTIFACTID = 'core'
 }
