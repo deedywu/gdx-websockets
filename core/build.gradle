@@ -15,10 +15,6 @@ dependencies {
 	implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
 }
 
-targetCompatibility = 1.8
-sourceCompatibility = 1.8
-
-
 ext {
 	ARTIFACTID = 'core'
 }

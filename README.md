@@ -62,7 +62,7 @@ This module is based on the TeaVM work originally contributed by SimonIT.
 
 Specify the `wsVersion` in the `gradle.properties` file in the root directory. Use a tag, branch snapshot, or commit published from this fork:
 
-`wsVersion=2.0.0`
+`wsVersion=2.0.1`
 
 `wsVersion=master-SNAPSHOT`
 

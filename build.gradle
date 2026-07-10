@@ -1,6 +1,6 @@
 ext {
     GROUPID = 'com.github.deedywu.gdx-websockets'
-    VERSION = '2.0.0'
+    VERSION = '2.0.1'
 
 }
 
@@ -29,17 +29,23 @@ allprojects {
     group = GROUPID
     version = VERSION
 
-    tasks.withType(JavaCompile) {
-        options.encoding = 'UTF-8'
-    }
-
     tasks.withType(Test) {
         systemProperty 'file.encoding', 'UTF-8'
     }
 
     pluginManager.withPlugin("java") {
+        def javaRelease = project.name == "teavm" ? 11 : 8
+
+        sourceCompatibility = JavaVersion.toVersion(javaRelease)
+        targetCompatibility = JavaVersion.toVersion(javaRelease)
+
         java {
             withSourcesJar()
+        }
+
+        tasks.withType(JavaCompile).configureEach {
+            options.encoding = 'UTF-8'
+            options.release = javaRelease
         }
 
         publishing {
