@@ -181,12 +181,20 @@ In TeaVM iOS launchers, make sure to call `IOSWebSockets.initiate()` before crea
 
 ## Changes
 
-1.5 -> 1.6
+### 2.0.3
 
-- Added `AbstractWebSocketListener`, which handles object deserialization and logs errors. This is a solid base for your `WebSocketListener` implementation if don't use pure string-based communication. 
-- Added `WebSocketHandler`, which extends `AbstractWebSocketListener` even further. Instead of dealing with raw `Object` types and having to determine packet type on your own, you can register a `Handler` to a specific packet class and it will be invoked each time a packet of the selected type is received.
-- Added default `Serializer` implementation: `JsonSerializer`. Uses **LibGDX** `Json` API to serialize objects as strings.
-- Added `WebSockets#DEFAULT_SERIALIZER`. Modify this field to automatically assign serializer of your choice to all new web socket instances.
-- Added `Base64Serializer`. Uses **LibGDX** `Base64Coder` API to encode and decode the data to and from *BASE64*. Wraps around an existing serializer.
-- Added custom serialization in [gdx-websocket-serialization](serialization). `ManualSerializer` is an alternative to the default `JsonSerializer`.
-- Added `WebSockets#closeGracefully(WebSocket)` null-safe utility method. Attempts to close the passed web socket and catches any thrown exceptions (their message is logged using `Gdx.app.debug` method). If passed web socket is null, it will be ignored. Useful for application disposing methods, when you don't exactly care if the web socket is not properly closed and *have to* continue disposing other native assets, even if `close()` call fails.
+- Added TeaVM Android support for `gdx-teavm` Android targets, including the `AndroidWebSockets` factory, JNI/C bridge resources, and an Android runtime bridge backed by `nv-websocket-client`.
+- Added TeaVM iOS support for experimental `gdx-teavm` iOS targets, including the `IOSWebSockets` factory and Objective-C/C bridge resources backed by `NSURLSessionWebSocketTask`.
+- Updated the root README with Android and iOS TeaVM dependencies and launcher initialization examples.
+
+### 2.0.2
+
+- Added the TeaVM Desktop C / GLFW backend for `gdx-teavm` desktop-c targets.
+- Renamed the TeaVM web artifact from `teavm` to `teavm-web`; use `com.github.deedywu.gdx-websockets:teavm-web:$wsVersion` from this release onward.
+- Published `external_cpp` resources and helper scripts for linking websocket support into generated native desktop-c executables.
+
+### 2.0.1
+
+- Prepared the fork for JitPack releases that work for JDK 17 consumers.
+- Centralized Java release configuration in the root Gradle build: Java 8 for regular modules and Java 11 for TeaVM modules.
+- Updated the published version from `2.0.0` to `2.0.1`.
