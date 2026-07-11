@@ -1,6 +1,6 @@
 ext {
     GROUPID = 'com.github.deedywu.gdx-websockets'
-    VERSION = '2.0.2-snapshot.1'
+    VERSION = '2.0.3'
 
 }
 

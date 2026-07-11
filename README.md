@@ -82,11 +82,23 @@ dependencies {
 }
 ```
 
+### TeaVM iOS
+
+Use this module with experimental `gdx-teavm` iOS targets. It publishes the TeaVM-side websocket factory plus Objective-C/C bridge resources compiled into the generated Xcode project.
+
+For a `gdx-teavm` iOS application module:
+
+```gradle
+dependencies {
+        implementation "com.github.deedywu.gdx-websockets:teavm-ios:$wsVersion"
+}
+```
+
 ### Version
 
 Specify the `wsVersion` in the `gradle.properties` file in the root directory. Use a tag, branch snapshot, or commit published from this fork:
 
-`wsVersion=2.0.2`
+`wsVersion=2.0.3`
 
 `wsVersion=master-SNAPSHOT`
 
@@ -146,6 +158,15 @@ In TeaVM Android launchers, make sure to call `AndroidWebSockets.initiate()` bef
             // Initiating web sockets module - safe to call before creating application:
             AndroidWebSockets.initiate();
             new AndroidApplication(new MyApplicationListener(), config);
+        }
+```
+
+In TeaVM iOS launchers, make sure to call `IOSWebSockets.initiate()` before creating web sockets:
+```
+        public static void main (String[] args) {
+            // Initiating web sockets module - safe to call before creating application:
+            IOSWebSockets.initiate();
+            new IOSApplication(new MyApplicationListener(), config);
         }
 ```
 
