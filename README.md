@@ -1,5 +1,7 @@
 # libGDX Web Sockets
 
+[![JitPack](https://jitpack.io/v/deedywu/gdx-websockets.svg)](https://jitpack.io/#deedywu/gdx-websockets)
+
 Maintained fork of [MrStahlfelge/gdx-websockets](https://github.com/MrStahlfelge/gdx-websockets), which itself forked [czyzby's websockets](https://github.com/czyzby/gdx-lml/tree/master/websocket).
 
 This fork preserves SimonIT's TeaVM implementation, keeps the existing API shape for libGDX projects, and serves as the home for ongoing compatibility updates.
