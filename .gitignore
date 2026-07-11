@@ -114,6 +114,7 @@ gradle-app.setting
 /html/build/
 /teavm-web/build/
 /teavm-desktop-c/build/
+/teavm-android/build/
 /ios/build/
 
 ## OS Specific

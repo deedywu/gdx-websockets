@@ -69,6 +69,19 @@ Use this module with `gdx-teavm` desktop-c targets. It publishes Java classes pl
         implementation "com.github.deedywu.gdx-websockets:teavm-desktop-c:$wsVersion"
 ```
 
+### TeaVM Android
+
+Use this module with `gdx-teavm` Android targets. It publishes the TeaVM-side websocket factory, the JNI/C bridge resources used by the `gdx-teavm` Android backend, and the Android runtime helper class that talks to `nv-websocket-client`.
+
+For a `gdx-teavm` Android application module:
+
+```gradle
+dependencies {
+        implementation "com.github.deedywu.gdx-websockets:teavm-android:$wsVersion"
+        teavm "com.github.deedywu.gdx-websockets:teavm-android:$wsVersion"
+}
+```
+
 ### Version
 
 Specify the `wsVersion` in the `gradle.properties` file in the root directory. Use a tag, branch snapshot, or commit published from this fork:
@@ -124,6 +137,15 @@ In TeaVM GLFW launchers, make sure to call `GLFWWebSockets.initiate()` before cr
             // Initiating web sockets module - safe to call before creating application:
             GLFWWebSockets.initiate();
             new GLFWApplication(new MyApplicationListener(), config);
+        }
+```
+
+In TeaVM Android launchers, make sure to call `AndroidWebSockets.initiate()` before creating web sockets:
+```
+        public static void main (String[] args) {
+            // Initiating web sockets module - safe to call before creating application:
+            AndroidWebSockets.initiate();
+            new AndroidApplication(new MyApplicationListener(), config);
         }
 ```
 

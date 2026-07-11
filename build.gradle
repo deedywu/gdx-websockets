@@ -1,6 +1,6 @@
 ext {
     GROUPID = 'com.github.deedywu.gdx-websockets'
-    VERSION = '2.0.2'
+    VERSION = '2.0.2-snapshot.1'
 
 }
 
@@ -37,10 +37,9 @@ allprojects {
     pluginManager.withPlugin("java") {
         def javaRelease = project.name.startsWith("teavm") ? 11 : 8
 
-        sourceCompatibility = JavaVersion.toVersion(javaRelease)
-        targetCompatibility = JavaVersion.toVersion(javaRelease)
-
         java {
+            sourceCompatibility = JavaVersion.toVersion(javaRelease)
+            targetCompatibility = JavaVersion.toVersion(javaRelease)
             withSourcesJar()
         }
 
