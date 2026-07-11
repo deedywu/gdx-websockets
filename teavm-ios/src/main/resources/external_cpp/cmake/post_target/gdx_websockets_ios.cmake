@@ -1,0 +1,6 @@
+if(APPLE)
+  find_library(FOUNDATION_FRAMEWORK Foundation)
+  if(FOUNDATION_FRAMEWORK)
+    target_link_libraries(${PROJECT_NAME} ${FOUNDATION_FRAMEWORK})
+  endif()
+endif()
