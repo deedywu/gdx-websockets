@@ -40,7 +40,8 @@ com_crashlytics_export_strings.xml
 /core/bin/
 /desktop/bin/
 /html/bin/
-/teavm/bin/
+/teavm-web/bin/
+/teavm-desktop-c/bin/
 /ios/bin/
 *.tmp
 *.bak
@@ -58,7 +59,8 @@ com_crashlytics_export_strings.xml
 /core/nbproject/private/
 /serialization/nbproject/private/
 /html/nbproject/private/
-/teavm/nbproject/private/
+/teavm-web/nbproject/private/
+/teavm-desktop-c/nbproject/private/
 /ios/nbproject/private/
 
 /build/
@@ -66,7 +68,8 @@ com_crashlytics_export_strings.xml
 /core/build/
 /serialization/build/
 /html/build/
-/teavm/build/
+/teavm-web/build/
+/teavm-desktop-c/build/
 /ios/build/
 
 /nbbuild/
@@ -74,7 +77,8 @@ com_crashlytics_export_strings.xml
 /core/nbbuild/
 /serialization/nbbuild/
 /html/nbbuild/
-/teavm/nbbuild/
+/teavm-web/nbbuild/
+/teavm-desktop-c/nbbuild/
 /ios/nbbuild/
 
 /dist/
@@ -82,7 +86,8 @@ com_crashlytics_export_strings.xml
 /core/dist/
 /serialization/dist/
 /html/dist/
-/teavm/dist/
+/teavm-web/dist/
+/teavm-desktop-c/dist/
 /ios/dist/
 
 /nbdist/
@@ -90,7 +95,8 @@ com_crashlytics_export_strings.xml
 /core/nbdist/
 /serialization/nbdist/
 /html/nbdist/
-/teavm/nbdist/
+/teavm-web/nbdist/
+/teavm-desktop-c/nbdist/
 /ios/nbdist/
 
 nbactions.xml
@@ -106,7 +112,8 @@ gradle-app.setting
 /core/build/
 /serialization/build/
 /html/build/
-/teavm/build/
+/teavm-web/build/
+/teavm-desktop-c/build/
 /ios/build/
 
 ## OS Specific

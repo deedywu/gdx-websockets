@@ -49,22 +49,36 @@ GWT module (GdxDefinition.gwt.xml):
         <inherits name='com.github.czyzby.websocket.GdxWebSocketGwt' />
 ```
 
-### TeaVM (Web)
+### TeaVM Web
 
 This module is based on the TeaVM work originally contributed by SimonIT.
 
-`Gradle` dependency for libGDX teavm project
+`Gradle` dependency for libGDX TeaVM web project
 ```
-        implementation "com.github.deedywu.gdx-websockets:teavm:$wsVersion"
+        implementation "com.github.deedywu.gdx-websockets:teavm-web:$wsVersion"
+```
+
+### TeaVM Desktop C
+
+Use this module with `gdx-teavm` desktop-c targets. It publishes Java classes plus `external_cpp` resources that `gdx-teavm` compiles into the final native executable. It does not bundle a prebuilt native binary.
+
+`Gradle` dependency for a `gdx-teavm` desktop-c project
+```
+        implementation "com.github.deedywu.gdx-websockets:teavm-desktop-c:$wsVersion"
 ```
 
 ### Version
 
 Specify the `wsVersion` in the `gradle.properties` file in the root directory. Use a tag, branch snapshot, or commit published from this fork:
 
-`wsVersion=2.0.1`
+`wsVersion=2.0.2`
 
 `wsVersion=master-SNAPSHOT`
+
+TeaVM web artifact names changed in `2.0.2`:
+
+- `2.0.1` uses `com.github.deedywu.gdx-websockets:teavm:$wsVersion`
+- `2.0.2` and newer use `com.github.deedywu.gdx-websockets:teavm-web:$wsVersion`
 
 ### Extensions
 
@@ -91,12 +105,23 @@ In HTMLLauncher, make sure to call `GwtWebSockets.initiate()` before creating we
         }
 ```
 
-In TeaVMLauncher, make sure to call `TeaWebSockets.initiate()` before creating web sockets:
+In TeaVM web launchers, make sure to call `TeaWebSockets.initiate()` before creating web sockets:
 ```
         public static void main (String[] args) {
             // Initiating web sockets module - safe to call before creating application:
             TeaWebSockets.initiate();
-            new TeaApplication(new MyApplicationListener(), config);
+
+            WebApplicationConfiguration config = new WebApplicationConfiguration("canvas");
+            new WebApplication(new MyApplicationListener(), config);
+        }
+```
+
+In TeaVM GLFW launchers, make sure to call `GLFWWebSockets.initiate()` before creating web sockets:
+```
+        public static void main (String[] args) {
+            // Initiating web sockets module - safe to call before creating application:
+            GLFWWebSockets.initiate();
+            new GLFWApplication(new MyApplicationListener(), config);
         }
 ```
 

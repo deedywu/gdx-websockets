@@ -1,1 +1,1 @@
-include 'core', 'common', 'html', 'teavm', 'serialization'
+include 'core', 'common', 'html', 'teavm-web', 'teavm-desktop-c', 'serialization'

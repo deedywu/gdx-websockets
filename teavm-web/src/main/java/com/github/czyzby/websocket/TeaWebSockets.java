@@ -2,7 +2,7 @@ package com.github.czyzby.websocket;
 
 import com.github.czyzby.websocket.impl.TeaWebSocket;
 
-/** Allows to initiate TeaVM web sockets module.
+/** Allows to initiate the TeaVM web sockets module.
  *
  * @author SimonIT */
 public class TeaWebSockets {
