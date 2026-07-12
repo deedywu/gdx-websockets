@@ -1,0 +1,14 @@
+<config>
+  <executableName>gdx-websockets-ios</executableName>
+  <mainClass>com.github.czyzby.websocket.examples.ios.IOSLauncher</mainClass>
+  <os>ios</os>
+  <target>ios</target>
+  <iosInfoPList>Info.plist.xml</iosInfoPList>
+  <forceLinkClasses>
+    <pattern>com.badlogic.gdx.backends.iosrobovm.IOSApplication</pattern>
+    <pattern>com.android.okhttp.HttpHandler</pattern>
+    <pattern>com.android.okhttp.HttpsHandler</pattern>
+    <pattern>com.android.org.conscrypt.**</pattern>
+    <pattern>com.android.org.bouncycastle.**</pattern>
+  </forceLinkClasses>
+</config>
