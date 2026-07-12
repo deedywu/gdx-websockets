@@ -12,6 +12,7 @@ extra["VERSION"] = libraryVersion
 extra["appName"] = "gdx-websockets"
 extra["gdxVersion"] = "1.14.2"
 extra["nvVersion"] = "2.14"
+extra["roboVMVersion"] = "2.3.24"
 extra["teavmVersion"] = "0.15.0"
 extra["gdxTeaVMVersion"] = "1.5.6"
 extra["gwtVersion"] = "2.11.0"

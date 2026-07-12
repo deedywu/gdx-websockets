@@ -5,6 +5,14 @@ pluginManagement {
         maven { url = uri("https://central.sonatype.com/repository/maven-snapshots/") }
         gradlePluginPortal()
     }
+
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == 'com.mobidevelop.robovm' || requested.id.id == 'robovm') {
+                useModule("com.mobidevelop.robovm:robovm-gradle-plugin:${requested.version ?: '2.3.24'}")
+            }
+        }
+    }
 }
 
 def localPropertiesFile = new File(settingsDir, 'local.properties')
@@ -26,6 +34,7 @@ boolean isAndroidSdkDir(String path) {
 def hasAndroidSdk = isAndroidSdkDir(System.getenv('ANDROID_HOME')) ||
         isAndroidSdkDir(System.getenv('ANDROID_SDK_ROOT')) ||
         isAndroidSdkDir(localProperties.getProperty('sdk.dir'))
+def isMacOs = System.getProperty('os.name').toLowerCase().contains('mac')
 
 include ':libraries:core'
 include ':libraries:backends:common'
@@ -46,4 +55,10 @@ if (hasAndroidSdk) {
     include ':examples:teavm-android'
 } else {
     logger.lifecycle('Android SDK not found. Skipping :examples:android and :examples:teavm-android. Set ANDROID_HOME, ANDROID_SDK_ROOT, or local.properties sdk.dir to enable them.')
+}
+
+if (isMacOs) {
+    include ':examples:ios'
+} else {
+    logger.lifecycle('macOS not detected. Skipping :examples:ios because RoboVM iOS builds require the Apple toolchain.')
 }

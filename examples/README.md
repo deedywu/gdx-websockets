@@ -10,6 +10,7 @@ This directory groups runnable samples for `gdx-websockets`.
 - `teavm-web`: TeaVM web example using the `teavm-web` backend
 - `gwt`: GWT example using the `html` backend
 - `android`: standard Android launcher using `common` when Android SDK is configured
+- `ios`: standard RoboVM MetalANGLE iOS launcher using `common` when running on macOS
 - `teavm-android`: TeaVM Android launcher using the `teavm-android` backend when Android SDK is configured
 
 ## Run
@@ -56,6 +57,28 @@ Android build:
 ```bash
 ./gradlew :examples:android:assembleDebug
 ./gradlew :examples:android:installDebug
+```
+
+iOS simulator build and run:
+
+```bash
+./gradlew :examples:ios:iosRunSimulator
+./gradlew :examples:ios:iosRunDevice
+./gradlew :examples:ios:iosPackageIpa
+```
+
+List available iOS simulators:
+
+```bash
+./gradlew :examples:ios:iosListSimulators
+```
+
+Run a specific iOS simulator:
+
+```bash
+./gradlew :examples:ios:iosRunSimulator \
+    -PiosSimulatorName="iPhone 15 Pro" \
+    -PiosSimulatorSdk=17.5
 ```
 
 TeaVM Android build:
