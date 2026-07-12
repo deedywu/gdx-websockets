@@ -10,6 +10,9 @@ val wsVersion = rootProject.version.toString()
 
 val generatedAndroidDir = layout.buildDirectory.dir("generated/gdx-teavm/android")
 val generatedAndroidCMakeFile = generatedAndroidDir.map { it.file("CMakeLists.txt") }
+val generatedWebSocketsAndroidCMakeFile = generatedAndroidDir.map {
+    it.file("c/external_cpp/cmake/pre_target/gdx_websockets_android.cmake")
+}
 val generatedDefaultFontAssetsDir = layout.buildDirectory.dir("generated/gdx-default-font-assets")
 val androidCxxDir = rootProject.layout.buildDirectory.dir("android-cxx/examples-teavm-android")
 val gdxFontConfiguration = configurations.detachedConfiguration(
@@ -128,14 +131,25 @@ val patchGeneratedAndroidCMake = tasks.register("patchGeneratedAndroidCMake") {
             return@doLast
         }
 
-        var text = cmakeFile.readLines()
-            .filterNot { line ->
-                line.contains("""include(\"\${'$'}{CMAKE_CURRENT_SOURCE_DIR}/c/external_cpp/cmake/pre_target/gdx_websockets_android.cmake\")""") ||
-                        line.contains("""list(REMOVE_ITEM SOURCES \"\${'$'}{CMAKE_CURRENT_SOURCE_DIR}/c/external_cpp/teavm_optimizations/teavm/teavm_spritebatch.c\")""")
-            }
-            .joinToString("\n")
         val includeSnippet = """include("${'$'}{CMAKE_CURRENT_SOURCE_DIR}/c/external_cpp/cmake/pre_target/gdx_websockets_android.cmake")"""
         val removeSnippet = """list(REMOVE_ITEM SOURCES "${'$'}{CMAKE_CURRENT_SOURCE_DIR}/c/external_cpp/teavm_optimizations/teavm/teavm_spritebatch.c")"""
+        val webSocketsCMakeFile = generatedWebSocketsAndroidCMakeFile.get().asFile
+
+        if (!webSocketsCMakeFile.isFile) {
+            webSocketsCMakeFile.parentFile.mkdirs()
+            webSocketsCMakeFile.writeText(
+                """
+                include_directories("${'$'}{CMAKE_CURRENT_SOURCE_DIR}/c/external_cpp/websockets")
+                list(APPEND SOURCES "${'$'}{CMAKE_CURRENT_SOURCE_DIR}/c/external_cpp/websockets/teavm_websocket_android.c")
+                """.trimIndent() + "\n"
+            )
+        }
+
+        var text = cmakeFile.readLines()
+            .filterNot { line ->
+                line.contains(includeSnippet) || line.contains(removeSnippet)
+            }
+            .joinToString("\n")
 
         if (!text.contains(includeSnippet) || !text.contains(removeSnippet)) {
             text = text.replace(
