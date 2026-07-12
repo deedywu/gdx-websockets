@@ -59,6 +59,7 @@ if (hasAndroidSdk) {
 
 if (isMacOs) {
     include ':examples:ios'
+    include ':examples:teavm-ios'
 } else {
-    logger.lifecycle('macOS not detected. Skipping :examples:ios because RoboVM iOS builds require the Apple toolchain.')
+    logger.lifecycle('macOS not detected. Skipping :examples:ios and :examples:teavm-ios because iOS builds require the Apple toolchain.')
 }

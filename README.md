@@ -128,6 +128,7 @@ Samples now live under `examples`.
 - `:examples:android`: standard Android launcher using `common` when Android SDK is configured
 - `:examples:ios`: standard RoboVM MetalANGLE iOS launcher using `common` when running on macOS
 - `:examples:teavm-android`: TeaVM Android launcher using `teavm-android` when Android SDK is configured
+- `:examples:teavm-ios`: TeaVM iOS launcher using `teavm-ios` when running on macOS
 
 Run it with:
 
@@ -149,6 +150,29 @@ For a connected iOS device, list devices and run with signing enabled:
 ```bash
 ./gradlew :examples:ios:iosListDevices
 ./gradlew :examples:ios:iosRunDevice -PiosSkipSigning=false
+```
+
+For the TeaVM iOS example, generate the native payload and run the generated Xcode project on a simulator:
+
+```bash
+./gradlew :examples:teavm-ios:iosGenerate
+./gradlew :examples:teavm-ios:iosInitXcode
+./gradlew :examples:teavm-ios:iosRunSimulator
+```
+
+For a connected TeaVM iOS device build, list devices and run with signing enabled:
+
+```bash
+./gradlew :examples:teavm-ios:iosListDevices
+./gradlew :examples:teavm-ios:iosRunDevice \
+    -PiosDeviceUdid=<device-udid> \
+    -PiosSkipSigning=false
+```
+
+Package the generated TeaVM iOS app as an IPA:
+
+```bash
+./gradlew :examples:teavm-ios:iosPackageIpa
 ```
 
 The demo uses the interactive `gdx-teavm` websocket UI flow and connects to `wss://ws.postman-echo.com/raw` by default.
