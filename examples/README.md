@@ -67,13 +67,20 @@ iOS simulator build and run:
 ./gradlew :examples:ios:iosPackageIpa
 ```
 
+List connected iOS devices and run on a real device:
+
+```bash
+./gradlew :examples:ios:iosListDevices
+./gradlew :examples:ios:iosRunDevice -PiosSkipSigning=false
+```
+
 List available iOS simulators:
 
 ```bash
 ./gradlew :examples:ios:iosListSimulators
 ```
 
-Run a specific iOS simulator:
+Use the simulator name and runtime version from that local output to run a specific simulator. For example, if your machine lists `iPhone 15 Pro` under `iOS 17.5`:
 
 ```bash
 ./gradlew :examples:ios:iosRunSimulator \

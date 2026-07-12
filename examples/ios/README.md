@@ -18,13 +18,77 @@ The iOS example is only included on macOS because RoboVM iOS builds require the 
 ./gradlew :examples:ios:iosPackageIpa
 ```
 
+## Real Device
+
+Connect the device, unlock it, trust this Mac, and enable Developer Mode on the device if iOS asks for it. Then list devices:
+
+```bash
+./gradlew :examples:ios:iosListDevices
+```
+
+Run on the connected device:
+
+```bash
+./gradlew :examples:ios:iosRunDevice \
+    -PiosSkipSigning=false
+```
+
+If more than one device is connected, use the UDID from the local device list:
+
+```bash
+./gradlew :examples:ios:iosRunDevice \
+    -PiosSkipSigning=false \
+    -PiosDeviceUdid="<device udid>"
+```
+
+If RoboVM cannot choose a signing identity or provisioning profile automatically, pass them explicitly:
+
+```bash
+./gradlew :examples:ios:iosRunDevice \
+    -PiosSkipSigning=false \
+    -PiosSignIdentity="Apple Development: Your Name (TEAMID)" \
+    -PiosProvisioningProfile="<profile name or uuid>"
+```
+
+On newer Xcode/iOS versions where RoboVM's built-in device launcher cannot mount a developer disk image, build with RoboVM and launch with Xcode `devicectl`:
+
+```bash
+./gradlew :examples:ios:iosRunDeviceDevicectl \
+    -PiosSkipSigning=false \
+    -PiosDeviceUdid="<device udid>" \
+    -PiosSignIdentity="Apple Development: Your Name (TEAMID)" \
+    -PiosProvisioningProfile="<profile name or uuid>"
+```
+
+Check local code signing identities with:
+
+```bash
+security find-identity -v -p codesigning
+```
+
 List available simulators and runtimes:
 
 ```bash
 ./gradlew :examples:ios:iosListSimulators
 ```
 
-Use the simulator name and iOS runtime version from that output to run a specific simulator:
+This reads the simulators installed on your local machine. For example, one local machine might print:
+
+```text
+-- iOS 17.5 --
+    iPhone 15 Pro (...) (Booted)
+    ...
+```
+
+Use the simulator name and iOS runtime version from your own output to run a specific simulator:
+
+```bash
+./gradlew :examples:ios:iosRunSimulator \
+    -PiosSimulatorName="<simulator name>" \
+    -PiosSimulatorSdk=<runtime version>
+```
+
+For the example output above:
 
 ```bash
 ./gradlew :examples:ios:iosRunSimulator \

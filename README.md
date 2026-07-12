@@ -135,13 +135,20 @@ Run it with:
 ./gradlew :examples:desktop:run
 ```
 
-For the iOS example, list simulators and run a specific one with:
+For the iOS example, first list simulators installed on your local machine, then use a simulator name and runtime version from that output:
 
 ```bash
 ./gradlew :examples:ios:iosListSimulators
 ./gradlew :examples:ios:iosRunSimulator \
     -PiosSimulatorName="iPhone 15 Pro" \
     -PiosSimulatorSdk=17.5
+```
+
+For a connected iOS device, list devices and run with signing enabled:
+
+```bash
+./gradlew :examples:ios:iosListDevices
+./gradlew :examples:ios:iosRunDevice -PiosSkipSigning=false
 ```
 
 The demo uses the interactive `gdx-teavm` websocket UI flow and connects to `wss://ws.postman-echo.com/raw` by default.
