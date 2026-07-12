@@ -8,6 +8,7 @@ This directory groups runnable samples for `gdx-websockets`.
 - `desktop`: LWJGL3 launcher that initializes `CommonWebSockets`
 - `teavm-web`: TeaVM web example using the `teavm-web` backend
 - `gwt`: GWT example using the `html` backend
+- `android`: standard Android launcher using `common` when Android SDK is configured
 
 ## Run
 
@@ -38,4 +39,11 @@ GWT Super Dev:
 
 ```bash
 ./gradlew :examples:gwt:superDev
+```
+
+Android build:
+
+```bash
+./gradlew :examples:android:assembleDebug
+./gradlew :examples:android:installDebug
 ```

@@ -1,3 +1,31 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+def localPropertiesFile = new File(settingsDir, 'local.properties')
+def localProperties = new Properties()
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.newInputStream())
+}
+
+boolean isAndroidSdkDir(String path) {
+    if (!path) {
+        return false
+    }
+    def sdkDir = new File(path)
+    return sdkDir.isDirectory() &&
+            new File(sdkDir, 'platforms').isDirectory() &&
+            new File(sdkDir, 'platform-tools').isDirectory()
+}
+
+def hasAndroidSdk = isAndroidSdkDir(System.getenv('ANDROID_HOME')) ||
+        isAndroidSdkDir(System.getenv('ANDROID_SDK_ROOT')) ||
+        isAndroidSdkDir(localProperties.getProperty('sdk.dir'))
+
 include ':libraries:core'
 include ':libraries:backends:common'
 include ':libraries:backends:html'
@@ -10,3 +38,9 @@ include ':examples:core'
 include ':examples:desktop'
 include ':examples:gwt'
 include ':examples:teavm-web'
+
+if (hasAndroidSdk) {
+    include ':examples:android'
+} else {
+    logger.lifecycle('Android SDK not found. Skipping :examples:android. Set ANDROID_HOME, ANDROID_SDK_ROOT, or local.properties sdk.dir to enable it.')
+}
