@@ -10,12 +10,14 @@ hs_err_pid*
 
 ## GWT
 /html/war/
+/examples/gwt/war/
 /html/gwt-unitCache/
 .apt_generated/
 .gwt/
 gwt-unitCache/
 www-test/
 .gwt-tmp/
+**/.cxx/
 
 ## Android Studio and Intellij and Android in general
 /android/libs/armeabi/

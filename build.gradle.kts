@@ -14,6 +14,7 @@ extra["gdxVersion"] = "1.14.2"
 extra["nvVersion"] = "2.14"
 extra["teavmVersion"] = "0.15.0"
 extra["gdxTeaVMVersion"] = "1.5.6"
+extra["gwtVersion"] = "2.11.0"
 
 allprojects {
     val currentProject = this
@@ -26,10 +27,15 @@ allprojects {
         google()
         mavenCentral()
         mavenLocal()
+        maven(url = uri("https://central.sonatype.com/repository/maven-snapshots/"))
         maven(url = uri("https://oss.sonatype.org/content/repositories/snapshots/"))
         maven(url = uri("https://oss.sonatype.org/content/repositories/releases/"))
         maven(url = uri("https://jitpack.io"))
-        maven(url = uri("https://teavm.org/maven/repository/"))
+        maven(url = uri("https://teavm.org/maven/repository/")) {
+            content {
+                includeGroup("org.teavm")
+            }
+        }
     }
 
     group = if (currentProject.path.startsWith(":examples:")) "$groupId.examples" else groupId
