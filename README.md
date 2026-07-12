@@ -14,6 +14,12 @@ It works on all platforms targeted by libGDX.
 - Keep TeaVM support available and maintained
 - Stay close to the original API so existing libGDX projects can migrate with minimal changes
 
+## Project layout
+- `libraries/core`: shared websocket API and default serializers
+- `libraries/backends/*`: platform-specific websocket implementations
+- `libraries/extensions/*`: optional add-ons such as manual serialization
+- `examples/*`: runnable sample projects
+
 ## Dependencies
 If you do not already have it, add JitPack to the repositories in your root `build.gradle` file:
 
@@ -109,7 +115,19 @@ TeaVM web artifact names changed in `2.0.2`:
 
 ### Extensions
 
-- [gdx-websocket-serialization](serialization): a custom serialization mechanism, not based on reflection. Alternative to JSON-based communication. More verbose, but gives you full control over the serialization process. Useful for performance-critical applications.
+- [gdx-websocket-serialization](libraries/extensions/serialization): a custom serialization mechanism, not based on reflection. Alternative to JSON-based communication. More verbose, but gives you full control over the serialization process. Useful for performance-critical applications.
+
+## Examples
+
+A desktop sample now lives under `examples/websockets`. It uses the shared demo code from `examples:websockets:core` and a LWJGL3 launcher from `examples:websockets:desktop`.
+
+Run it with:
+
+```bash
+./gradlew :examples:websockets:desktop:run
+```
+
+The demo uses the interactive `gdx-teavm` websocket UI flow and connects to `wss://ws.postman-echo.com/raw` by default.
 
 ## Basic usage
 

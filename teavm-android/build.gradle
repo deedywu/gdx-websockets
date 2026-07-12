@@ -1,8 +1,0 @@
-apply plugin: 'java-library'
-
-dependencies {
-    api project(":core")
-    implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
-    implementation "org.teavm:teavm-interop:$teavmVersion"
-    implementation "com.neovisionaries:nv-websocket-client:$nvVersion"
-}
