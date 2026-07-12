@@ -10,6 +10,7 @@ hs_err_pid*
 
 ## GWT
 /html/war/
+/examples/gwt/war/
 /html/gwt-unitCache/
 .apt_generated/
 .gwt/

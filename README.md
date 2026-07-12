@@ -119,7 +119,10 @@ TeaVM web artifact names changed in `2.0.2`:
 
 ## Examples
 
-A desktop sample now lives under `examples`. It uses the shared demo code from `examples:core` and a LWJGL3 launcher from `examples:desktop`.
+Samples now live under `examples`.
+
+- `:examples:desktop`: LWJGL3 launcher using `common`
+- `:examples:gwt`: GWT launcher using `html`
 
 Run it with:
 
