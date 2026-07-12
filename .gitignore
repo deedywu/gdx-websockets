@@ -45,6 +45,7 @@ com_crashlytics_export_strings.xml
 /teavm-android/bin/
 /teavm-ios/bin/
 /ios/bin/
+**/bin/
 *.tmp
 *.bak
 *.swp
@@ -66,6 +67,7 @@ com_crashlytics_export_strings.xml
 /teavm-android/nbproject/private/
 /teavm-ios/nbproject/private/
 /ios/nbproject/private/
+**/nbproject/private/
 
 /build/
 /common/build/
@@ -77,6 +79,7 @@ com_crashlytics_export_strings.xml
 /teavm-android/build/
 /teavm-ios/build/
 /ios/build/
+**/build/
 
 /nbbuild/
 /common/nbbuild/
@@ -88,6 +91,7 @@ com_crashlytics_export_strings.xml
 /teavm-android/nbbuild/
 /teavm-ios/nbbuild/
 /ios/nbbuild/
+**/nbbuild/
 
 /dist/
 /common/dist/
@@ -99,6 +103,7 @@ com_crashlytics_export_strings.xml
 /teavm-android/dist/
 /teavm-ios/dist/
 /ios/dist/
+**/dist/
 
 /nbdist/
 /common/nbdist/
@@ -110,6 +115,7 @@ com_crashlytics_export_strings.xml
 /teavm-android/nbdist/
 /teavm-ios/nbdist/
 /ios/nbdist/
+**/nbdist/
 
 nbactions.xml
 nb-configuration.xml
@@ -129,6 +135,7 @@ gradle-app.setting
 /teavm-android/build/
 /teavm-ios/build/
 /ios/build/
+**/build/
 
 ## OS Specific
 .DS_Store
@@ -141,3 +148,5 @@ Thumbs.db
 /ios/xcode/native/
 /ios/IOSLauncher.app
 /ios/IOSLauncher.app.dSYM
+
+/.tools/
