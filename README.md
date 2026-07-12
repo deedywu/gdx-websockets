@@ -122,6 +122,7 @@ TeaVM web artifact names changed in `2.0.2`:
 Samples now live under `examples`.
 
 - `:examples:desktop`: LWJGL3 launcher using `common`
+- `:examples:teavm-web`: TeaVM web launcher using `teavm-web`
 - `:examples:gwt`: GWT launcher using `html`
 
 Run it with:
