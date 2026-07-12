@@ -28,6 +28,12 @@ val buildMainClass = "com.github.czyzby.websocket.examples.teavmdesktopc.BuildTe
 val desktopCTaskGroup = "example-desktop-c"
 val desktopCOutputDir = layout.buildDirectory.dir("dist")
 val desktopCCMakeFile = desktopCOutputDir.map { it.file("CMakeLists.txt") }
+val desktopCWebSocketsPreCMakeFile = desktopCOutputDir.map {
+    it.file("c/external_cpp/cmake/pre_target/gdx_websockets_glfw.cmake")
+}
+val desktopCWebSocketsPostCMakeFile = desktopCOutputDir.map {
+    it.file("c/external_cpp/cmake/post_target/gdx_websockets_glfw.cmake")
+}
 val desktopCReleaseDir = desktopCOutputDir.map { it.dir("c/release") }
 val linuxCurlPath = providers.gradleProperty("gdxTeaVMLinuxCurlPath")
 val macCurlPath = providers.gradleProperty("gdxTeaVMMacCurlPath")
@@ -67,6 +73,42 @@ val patchGeneratedDesktopCCMake = tasks.register("patchGeneratedDesktopCCMake") 
         val postSnippet = """set(TEAVM_APP_TARGET websockets)
 include("${'$'}{CMAKE_CURRENT_SOURCE_DIR}/c/external_cpp/cmake/post_target/gdx_websockets_glfw.cmake")"""
         val targetLine = "add_executable(websockets \${SOURCES})"
+        val preCMakeFile = desktopCWebSocketsPreCMakeFile.get().asFile
+        val postCMakeFile = desktopCWebSocketsPostCMakeFile.get().asFile
+
+        if (!preCMakeFile.isFile) {
+            preCMakeFile.parentFile.mkdirs()
+            preCMakeFile.writeText(
+                """
+                if(WIN32 OR UNIX)
+                  set(TEAVM_WEBSOCKETS_GLFW_SOURCE "${'$'}{CMAKE_CURRENT_SOURCE_DIR}/c/external_cpp/websockets/teavm_websocket_glfw.c")
+                  if(EXISTS "${'$'}{TEAVM_WEBSOCKETS_GLFW_SOURCE}")
+                    list(APPEND SOURCES "${'$'}{TEAVM_WEBSOCKETS_GLFW_SOURCE}")
+                  endif()
+                endif()
+                """.trimIndent() + "\n"
+            )
+        }
+
+        if (!postCMakeFile.isFile) {
+            postCMakeFile.parentFile.mkdirs()
+            postCMakeFile.writeText(
+                """
+                if(WIN32)
+                  target_include_directories(${'$'}{TEAVM_APP_TARGET} PRIVATE
+                      "${'$'}{CMAKE_CURRENT_SOURCE_DIR}/c/external_cpp/websockets")
+                  target_link_libraries(${'$'}{TEAVM_APP_TARGET} PRIVATE winhttp)
+                endif()
+
+                if(UNIX)
+                  find_package(Threads REQUIRED)
+                  target_include_directories(${'$'}{TEAVM_APP_TARGET} PRIVATE
+                      "${'$'}{CMAKE_CURRENT_SOURCE_DIR}/c/external_cpp/websockets")
+                  target_link_libraries(${'$'}{TEAVM_APP_TARGET} PRIVATE Threads::Threads ${'$'}{CMAKE_DL_LIBS})
+                endif()
+                """.trimIndent() + "\n"
+            )
+        }
 
         if (!text.contains(preSnippet) || !text.contains(postSnippet)) {
             text = text.replace(
@@ -101,6 +143,11 @@ fun Exec.configureDesktopCScript(scriptName: String) {
     }
 }
 
+fun desktopCExecutable(buildType: String): String {
+    val extension = if (System.getProperty("os.name").lowercase().contains("windows")) ".exe" else ""
+    return desktopCReleaseDir.get().file("websockets_${buildType.lowercase()}$extension").asFile.absolutePath
+}
+
 val teavmDesktopCDebugBuild = tasks.register<Exec>("teavmDesktopCDebugBuild") {
     group = desktopCTaskGroup
     description = "Generate TeaVM C sources and build the Debug websocket GLFW executable"
@@ -124,7 +171,7 @@ tasks.register<Exec>("teavmDesktopCDebugRun") {
     description = "Generate, build, and run the Debug websocket GLFW executable with native console log output"
     dependsOn(teavmDesktopCDebugBuild)
     workingDir = desktopCReleaseDir.get().asFile
-    commandLine(desktopCReleaseDir.get().file("websockets_debug.exe").asFile.absolutePath)
+    commandLine(desktopCExecutable("debug"))
 }
 
 tasks.register<Exec>("teavmDesktopCReleaseRun") {
@@ -132,7 +179,7 @@ tasks.register<Exec>("teavmDesktopCReleaseRun") {
     description = "Generate, build, and run the Release websocket GLFW executable"
     dependsOn("teavmDesktopCReleaseBuild")
     workingDir = desktopCReleaseDir.get().asFile
-    commandLine(desktopCReleaseDir.get().file("websockets_release.exe").asFile.absolutePath)
+    commandLine(desktopCExecutable("release"))
 }
 
 tasks.register<Exec>("teavmDesktopCReleaseConsoleRun") {
@@ -140,5 +187,5 @@ tasks.register<Exec>("teavmDesktopCReleaseConsoleRun") {
     description = "Generate, build, and run the Release websocket GLFW executable with native console log output"
     dependsOn("teavmDesktopCReleaseBuild")
     workingDir = desktopCReleaseDir.get().asFile
-    commandLine(desktopCReleaseDir.get().file("websockets_release.exe").asFile.absolutePath)
+    commandLine(desktopCExecutable("release"))
 }
