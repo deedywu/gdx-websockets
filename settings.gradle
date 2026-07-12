@@ -38,6 +38,7 @@ include ':libraries:extensions:serialization'
 include ':examples:core'
 include ':examples:desktop'
 include ':examples:gwt'
+include ':examples:teavm-desktop-c'
 include ':examples:teavm-web'
 
 if (hasAndroidSdk) {

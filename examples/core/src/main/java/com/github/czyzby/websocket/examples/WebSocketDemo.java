@@ -23,6 +23,10 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
 
     private static final int MAX_LOG_LINES = 10;
     private static final int MAX_INPUT_LENGTH = 120;
+    private static final int BUTTON_NONE = 0;
+    private static final int BUTTON_SEND = 1;
+    private static final int BUTTON_RECONNECT = 2;
+    private static final int BUTTON_CLEAR = 3;
 
     private final Array<String> logLines = new Array<String>();
     private final String endpoint;
@@ -44,6 +48,8 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
     private int height = 480;
     private float uiScale = 1f;
     private float bottomUiReservedHeight;
+    private int hoveredButton = BUTTON_NONE;
+    private int pressedButton = BUTTON_NONE;
 
     public WebSocketDemo() {
         this(DEFAULT_URL, true);
@@ -201,10 +207,9 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
         if (touchControlsEnabled && shapeRenderer != null) {
             shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-            shapeRenderer.setColor(0.14f, 0.18f, 0.24f, 1f);
-            shapeRenderer.rect(sendBounds.x, sendBounds.y, sendBounds.width, sendBounds.height);
-            shapeRenderer.rect(reconnectBounds.x, reconnectBounds.y, reconnectBounds.width, reconnectBounds.height);
-            shapeRenderer.rect(clearBounds.x, clearBounds.y, clearBounds.width, clearBounds.height);
+            drawButtonBackground(sendBounds, BUTTON_SEND);
+            drawButtonBackground(reconnectBounds, BUTTON_RECONNECT);
+            drawButtonBackground(clearBounds, BUTTON_CLEAR);
             shapeRenderer.end();
         }
 
@@ -255,23 +260,44 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
         font.draw(batch, label, textX, textY);
     }
 
-    private boolean handleTouch(final int screenX, final int screenY) {
-        final float touchX = screenX;
-        final float touchY = height - screenY;
+    private void drawButtonBackground(final Rectangle bounds, final int buttonType) {
+        if (pressedButton == buttonType) {
+            shapeRenderer.setColor(0.27f, 0.44f, 0.62f, 1f);
+        } else if (hoveredButton == buttonType) {
+            shapeRenderer.setColor(0.20f, 0.28f, 0.38f, 1f);
+        } else {
+            shapeRenderer.setColor(0.14f, 0.18f, 0.24f, 1f);
+        }
+        shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
+    }
+
+    private int getButtonAt(final float touchX, final float touchY) {
         if (sendBounds.contains(touchX, touchY)) {
-            sendMessage(inputBuffer.toString());
-            return true;
+            return BUTTON_SEND;
         }
         if (reconnectBounds.contains(touchX, touchY)) {
-            connect();
-            return true;
+            return BUTTON_RECONNECT;
         }
         if (clearBounds.contains(touchX, touchY)) {
-            logLines.clear();
-            lastMessage = "No messages yet";
-            return true;
+            return BUTTON_CLEAR;
         }
-        return false;
+        return BUTTON_NONE;
+    }
+
+    private boolean triggerButton(final int buttonType) {
+        switch (buttonType) {
+            case BUTTON_SEND:
+                return sendMessage(inputBuffer.toString());
+            case BUTTON_RECONNECT:
+                connect();
+                return true;
+            case BUTTON_CLEAR:
+                logLines.clear();
+                lastMessage = "No messages yet";
+                return true;
+            default:
+                return false;
+        }
     }
 
     private void closeSocket() {
@@ -406,12 +432,28 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
 
     @Override
     public boolean touchDown(final int screenX, final int screenY, final int pointer, final int button) {
-        return touchControlsEnabled && handleTouch(screenX, screenY);
+        if (!touchControlsEnabled) {
+            return false;
+        }
+        final float touchX = screenX;
+        final float touchY = height - screenY;
+        pressedButton = getButtonAt(touchX, touchY);
+        hoveredButton = pressedButton;
+        return pressedButton != BUTTON_NONE;
     }
 
     @Override
     public boolean touchUp(final int screenX, final int screenY, final int pointer, final int button) {
-        return false;
+        if (!touchControlsEnabled) {
+            return false;
+        }
+        final float touchX = screenX;
+        final float touchY = height - screenY;
+        final int releasedButton = getButtonAt(touchX, touchY);
+        final boolean handled = pressedButton != BUTTON_NONE && pressedButton == releasedButton && triggerButton(releasedButton);
+        pressedButton = BUTTON_NONE;
+        hoveredButton = releasedButton;
+        return handled;
     }
 
     @Override
@@ -421,12 +463,27 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
 
     @Override
     public boolean touchDragged(final int screenX, final int screenY, final int pointer) {
-        return false;
+        if (!touchControlsEnabled) {
+            return false;
+        }
+        final float touchX = screenX;
+        final float touchY = height - screenY;
+        hoveredButton = getButtonAt(touchX, touchY);
+        if (pressedButton != BUTTON_NONE && hoveredButton != pressedButton) {
+            pressedButton = BUTTON_NONE;
+        }
+        return hoveredButton != BUTTON_NONE;
     }
 
     @Override
     public boolean mouseMoved(final int screenX, final int screenY) {
-        return false;
+        if (!touchControlsEnabled) {
+            return false;
+        }
+        final float touchX = screenX;
+        final float touchY = height - screenY;
+        hoveredButton = getButtonAt(touchX, touchY);
+        return hoveredButton != BUTTON_NONE;
     }
 
     @Override

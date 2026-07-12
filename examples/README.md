@@ -6,6 +6,7 @@ This directory groups runnable samples for `gdx-websockets`.
 
 - `core`: shared demo application code
 - `desktop`: LWJGL3 launcher that initializes `CommonWebSockets`
+- `teavm-desktop-c`: TeaVM C / GLFW example using the `teavm-desktop-c` backend
 - `teavm-web`: TeaVM web example using the `teavm-web` backend
 - `gwt`: GWT example using the `html` backend
 - `android`: standard Android launcher using `common` when Android SDK is configured
@@ -21,6 +22,14 @@ From the repository root:
 
 The sample uses the interactive `gdx-teavm` websocket demo flow and connects to `wss://ws.postman-echo.com/raw` by default.
 Type text, press `Enter` to send, `F5` to reconnect, and `Esc` to clear the input buffer.
+
+TeaVM desktop-c build:
+
+```bash
+./gradlew :examples:teavm-desktop-c:teavmDesktopCGenerate
+./gradlew :examples:teavm-desktop-c:teavmDesktopCDebugBuild
+./gradlew :examples:teavm-desktop-c:teavmDesktopCDebugRun
+```
 
 TeaVM web build:
 
