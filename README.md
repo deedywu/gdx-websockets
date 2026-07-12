@@ -119,12 +119,12 @@ TeaVM web artifact names changed in `2.0.2`:
 
 ## Examples
 
-A desktop sample now lives under `examples/websockets`. It uses the shared demo code from `examples:websockets:core` and a LWJGL3 launcher from `examples:websockets:desktop`.
+A desktop sample now lives under `examples`. It uses the shared demo code from `examples:core` and a LWJGL3 launcher from `examples:desktop`.
 
 Run it with:
 
 ```bash
-./gradlew :examples:websockets:desktop:run
+./gradlew :examples:desktop:run
 ```
 
 The demo uses the interactive `gdx-teavm` websocket UI flow and connects to `wss://ws.postman-echo.com/raw` by default.

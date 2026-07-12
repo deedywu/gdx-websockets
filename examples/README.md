@@ -12,7 +12,7 @@ This directory groups runnable samples for `gdx-websockets`.
 From the repository root:
 
 ```bash
-./gradlew :examples:websockets:desktop:run
+./gradlew :examples:desktop:run
 ```
 
 The sample uses the interactive `gdx-teavm` websocket demo flow and connects to `wss://ws.postman-echo.com/raw` by default.
