@@ -6,7 +6,10 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
@@ -23,30 +26,48 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
 
     private final Array<String> logLines = new Array<String>();
     private final String endpoint;
+    private final boolean touchControlsEnabled;
     private final StringBuilder inputBuffer = new StringBuilder("Hello server");
+    private final Rectangle sendBounds = new Rectangle();
+    private final Rectangle reconnectBounds = new Rectangle();
+    private final Rectangle clearBounds = new Rectangle();
+    private final GlyphLayout glyphLayout = new GlyphLayout();
 
     private SpriteBatch batch;
     private BitmapFont font;
+    private ShapeRenderer shapeRenderer;
     private WebSocket socket;
     private String status = "Idle";
     private String lastMessage = "No messages yet";
-    private String helperText = "Type text, press Enter to send, F5 reconnect, Esc clear";
+    private String helperText;
     private int width = 800;
     private int height = 480;
     private float uiScale = 1f;
+    private float bottomUiReservedHeight;
 
     public WebSocketDemo() {
-        this(DEFAULT_URL);
+        this(DEFAULT_URL, true);
     }
 
     public WebSocketDemo(final String endpoint) {
+        this(endpoint, true);
+    }
+
+    public WebSocketDemo(final String endpoint, final boolean touchControlsEnabled) {
         this.endpoint = endpoint == null || endpoint.isEmpty() ? DEFAULT_URL : endpoint;
+        this.touchControlsEnabled = touchControlsEnabled;
+        helperText = touchControlsEnabled
+                ? "Tap buttons below or type with a hardware keyboard"
+                : "Type text, press Enter to send, F5 reconnect, Esc clear";
     }
 
     @Override
     public void create() {
         batch = new SpriteBatch();
         font = new BitmapFont();
+        if (touchControlsEnabled) {
+            shapeRenderer = new ShapeRenderer();
+        }
         resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         Gdx.input.setInputProcessor(this);
         connect();
@@ -157,11 +178,35 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
             uiScale = Math.max(1f, Math.min(this.width / 800f, this.height / 480f));
             font.getData().setScale(uiScale);
         }
+        if (touchControlsEnabled) {
+            final float margin = 24f * uiScale;
+            final float gap = 14f * uiScale;
+            final float buttonHeight = 52f * uiScale;
+            final float buttonWidth = (this.width - margin * 2f - gap * 2f) / 3f;
+            final float y = margin;
+            bottomUiReservedHeight = margin * 2f + buttonHeight;
+
+            sendBounds.set(margin, y, buttonWidth, buttonHeight);
+            reconnectBounds.set(margin + buttonWidth + gap, y, buttonWidth, buttonHeight);
+            clearBounds.set(margin + (buttonWidth + gap) * 2f, y, buttonWidth, buttonHeight);
+        } else {
+            bottomUiReservedHeight = 0f;
+        }
     }
 
     @Override
     public void render() {
         ScreenUtils.clear(0.08f, 0.1f, 0.14f, 1f);
+
+        if (touchControlsEnabled && shapeRenderer != null) {
+            shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setColor(0.14f, 0.18f, 0.24f, 1f);
+            shapeRenderer.rect(sendBounds.x, sendBounds.y, sendBounds.width, sendBounds.height);
+            shapeRenderer.rect(reconnectBounds.x, reconnectBounds.y, reconnectBounds.width, reconnectBounds.height);
+            shapeRenderer.rect(clearBounds.x, clearBounds.y, clearBounds.width, clearBounds.height);
+            shapeRenderer.end();
+        }
 
         batch.begin();
         final float x = 24f * uiScale;
@@ -185,12 +230,48 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
         font.setColor(Color.WHITE);
         font.draw(batch, "Recent events:", x, y);
         y -= lineHeight;
+        final float minLogY = touchControlsEnabled ? bottomUiReservedHeight + lineHeight * 0.5f : 0f;
 
         for (int i = logLines.size - 1; i >= 0; i--) {
+            if (y < minLogY) {
+                break;
+            }
             font.draw(batch, logLines.get(i), x, y);
             y -= lineHeight;
         }
+
+        if (touchControlsEnabled) {
+            drawButtonLabel("Send", sendBounds);
+            drawButtonLabel("Reconnect", reconnectBounds);
+            drawButtonLabel("Clear", clearBounds);
+        }
         batch.end();
+    }
+
+    private void drawButtonLabel(final String label, final Rectangle bounds) {
+        glyphLayout.setText(font, label);
+        final float textX = bounds.x + (bounds.width - glyphLayout.width) * 0.5f;
+        final float textY = bounds.y + (bounds.height + glyphLayout.height) * 0.5f;
+        font.draw(batch, label, textX, textY);
+    }
+
+    private boolean handleTouch(final int screenX, final int screenY) {
+        final float touchX = screenX;
+        final float touchY = height - screenY;
+        if (sendBounds.contains(touchX, touchY)) {
+            sendMessage(inputBuffer.toString());
+            return true;
+        }
+        if (reconnectBounds.contains(touchX, touchY)) {
+            connect();
+            return true;
+        }
+        if (clearBounds.contains(touchX, touchY)) {
+            logLines.clear();
+            lastMessage = "No messages yet";
+            return true;
+        }
+        return false;
     }
 
     private void closeSocket() {
@@ -213,10 +294,29 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
         Gdx.input.setInputProcessor(null);
         font.dispose();
         batch.dispose();
+        if (shapeRenderer != null) {
+            shapeRenderer.dispose();
+        }
     }
 
     @Override
     public boolean keyDown(final int keycode) {
+        if (touchControlsEnabled) {
+            if (keycode == Input.Keys.ENTER) {
+                sendTypedMessage();
+                return true;
+            }
+            if (keycode == Input.Keys.BACKSPACE || keycode == Input.Keys.DEL || keycode == Input.Keys.FORWARD_DEL) {
+                deleteTypedChar();
+                return true;
+            }
+
+            final char mappedCharacter = mapKeycodeToCharacter(keycode);
+            if (mappedCharacter != 0) {
+                appendTypedChar(mappedCharacter);
+                return true;
+            }
+        }
         if (keycode == Input.Keys.ESCAPE) {
             inputBuffer.setLength(0);
             return true;
@@ -231,6 +331,63 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
     @Override
     public boolean keyUp(final int keycode) {
         return false;
+    }
+
+    private char mapKeycodeToCharacter(final int keycode) {
+        final boolean shifted = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)
+                || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT);
+
+        if (keycode >= Input.Keys.A && keycode <= Input.Keys.Z) {
+            final char base = (char) ('a' + (keycode - Input.Keys.A));
+            return shifted ? Character.toUpperCase(base) : base;
+        }
+        if (keycode >= Input.Keys.NUM_0 && keycode <= Input.Keys.NUM_9) {
+            final char[] shiftedDigits = {')', '!', '@', '#', '$', '%', '^', '&', '*', '('};
+            final int index = keycode - Input.Keys.NUM_0;
+            return shifted ? shiftedDigits[index] : (char) ('0' + index);
+        }
+        if (keycode >= Input.Keys.NUMPAD_0 && keycode <= Input.Keys.NUMPAD_9) {
+            return (char) ('0' + (keycode - Input.Keys.NUMPAD_0));
+        }
+
+        switch (keycode) {
+            case Input.Keys.SPACE:
+                return ' ';
+            case Input.Keys.COMMA:
+                return shifted ? '<' : ',';
+            case Input.Keys.PERIOD:
+                return shifted ? '>' : '.';
+            case Input.Keys.SEMICOLON:
+                return shifted ? ':' : ';';
+            case Input.Keys.APOSTROPHE:
+                return shifted ? '"' : '\'';
+            case Input.Keys.SLASH:
+                return shifted ? '?' : '/';
+            case Input.Keys.BACKSLASH:
+                return shifted ? '|' : '\\';
+            case Input.Keys.LEFT_BRACKET:
+                return shifted ? '{' : '[';
+            case Input.Keys.RIGHT_BRACKET:
+                return shifted ? '}' : ']';
+            case Input.Keys.MINUS:
+                return shifted ? '_' : '-';
+            case Input.Keys.EQUALS:
+                return shifted ? '+' : '=';
+            case Input.Keys.GRAVE:
+                return shifted ? '~' : '`';
+            case Input.Keys.NUMPAD_DIVIDE:
+                return '/';
+            case Input.Keys.NUMPAD_MULTIPLY:
+                return '*';
+            case Input.Keys.NUMPAD_SUBTRACT:
+                return '-';
+            case Input.Keys.NUMPAD_ADD:
+                return '+';
+            case Input.Keys.NUMPAD_DOT:
+                return '.';
+            default:
+                return 0;
+        }
     }
 
     @Override
@@ -249,7 +406,7 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
 
     @Override
     public boolean touchDown(final int screenX, final int screenY, final int pointer, final int button) {
-        return false;
+        return touchControlsEnabled && handleTouch(screenX, screenY);
     }
 
     @Override

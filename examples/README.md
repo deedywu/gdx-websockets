@@ -9,6 +9,7 @@ This directory groups runnable samples for `gdx-websockets`.
 - `teavm-web`: TeaVM web example using the `teavm-web` backend
 - `gwt`: GWT example using the `html` backend
 - `android`: standard Android launcher using `common` when Android SDK is configured
+- `teavm-android`: TeaVM Android launcher using the `teavm-android` backend when Android SDK is configured
 
 ## Run
 
@@ -46,4 +47,11 @@ Android build:
 ```bash
 ./gradlew :examples:android:assembleDebug
 ./gradlew :examples:android:installDebug
+```
+
+TeaVM Android build:
+
+```bash
+./gradlew :examples:teavm-android:assembleDebug
+./gradlew :examples:teavm-android:installDebug
 ```

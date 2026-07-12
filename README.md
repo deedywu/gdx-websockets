@@ -125,6 +125,7 @@ Samples now live under `examples`.
 - `:examples:teavm-web`: TeaVM web launcher using `teavm-web`
 - `:examples:gwt`: GWT launcher using `html`
 - `:examples:android`: standard Android launcher using `common` when Android SDK is configured
+- `:examples:teavm-android`: TeaVM Android launcher using `teavm-android` when Android SDK is configured
 
 Run it with:
 

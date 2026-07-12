@@ -2,6 +2,7 @@ pluginManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url = uri("https://central.sonatype.com/repository/maven-snapshots/") }
         gradlePluginPortal()
     }
 }
@@ -41,6 +42,7 @@ include ':examples:teavm-web'
 
 if (hasAndroidSdk) {
     include ':examples:android'
+    include ':examples:teavm-android'
 } else {
-    logger.lifecycle('Android SDK not found. Skipping :examples:android. Set ANDROID_HOME, ANDROID_SDK_ROOT, or local.properties sdk.dir to enable it.')
+    logger.lifecycle('Android SDK not found. Skipping :examples:android and :examples:teavm-android. Set ANDROID_HOME, ANDROID_SDK_ROOT, or local.properties sdk.dir to enable them.')
 }
