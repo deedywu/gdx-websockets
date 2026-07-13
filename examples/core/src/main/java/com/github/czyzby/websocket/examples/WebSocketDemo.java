@@ -35,6 +35,7 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
     private static final int BUTTON_ENDPOINT_APPLY = 7;
     private static final int BUTTON_ENDPOINT_CANCEL = 8;
     private static final int BUTTON_ENDPOINT_INPUT = 9;
+    private static final int BUTTON_BACK = 10;
 
     private final Array<String> logLines = new Array<String>();
     private final boolean touchControlsEnabled;
@@ -43,6 +44,7 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
     private final Rectangle reconnectBounds = new Rectangle();
     private final Rectangle clearBounds = new Rectangle();
     private final Rectangle settingsBounds = new Rectangle();
+    private final Rectangle backBounds = new Rectangle();
     private final Rectangle settingsPanelBounds = new Rectangle();
     private final Rectangle endpointWsBounds = new Rectangle();
     private final Rectangle endpointWssBounds = new Rectangle();
@@ -60,6 +62,7 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
     private String status = "Idle";
     private String lastMessage = "No messages yet";
     private String helperText;
+    private BackHandler backHandler;
     private int width = 800;
     private int height = 480;
     private float uiScale = 1f;
@@ -83,6 +86,10 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
         helperText = touchControlsEnabled
                 ? "Tap buttons below or type with a hardware keyboard. Settings edits the endpoint."
                 : "Type text, press Enter to send, F2 settings, F5 reconnect, Esc clear";
+    }
+
+    public final void setBackHandler(final BackHandler backHandler) {
+        this.backHandler = backHandler;
     }
 
     @Override
@@ -319,7 +326,8 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
             final float margin = 24f * uiScale;
             final float gap = 14f * uiScale;
             final float buttonHeight = 52f * uiScale;
-            final float buttonWidth = (this.width - margin * 2f - gap * 3f) / 4f;
+            final int buttonCount = backHandler == null ? 4 : 5;
+            final float buttonWidth = (this.width - margin * 2f - gap * (buttonCount - 1)) / buttonCount;
             final float y = margin;
             bottomUiReservedHeight = margin * 2f + buttonHeight;
 
@@ -327,6 +335,11 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
             reconnectBounds.set(margin + buttonWidth + gap, y, buttonWidth, buttonHeight);
             clearBounds.set(margin + (buttonWidth + gap) * 2f, y, buttonWidth, buttonHeight);
             settingsBounds.set(margin + (buttonWidth + gap) * 3f, y, buttonWidth, buttonHeight);
+            if (backHandler == null) {
+                backBounds.set(0f, 0f, 0f, 0f);
+            } else {
+                backBounds.set(margin + (buttonWidth + gap) * 4f, y, buttonWidth, buttonHeight);
+            }
 
             final float panelWidth = Math.min(this.width - margin * 2f, 620f * uiScale);
             final float panelHeight = Math.min(this.height - margin * 3f, 320f * uiScale);
@@ -368,6 +381,9 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
             drawButtonBackground(reconnectBounds, BUTTON_RECONNECT);
             drawButtonBackground(clearBounds, BUTTON_CLEAR);
             drawButtonBackground(settingsBounds, BUTTON_SETTINGS);
+            if (backHandler != null) {
+                drawButtonBackground(backBounds, BUTTON_BACK);
+            }
             shapeRenderer.end();
         }
 
@@ -408,6 +424,9 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
             drawButtonLabel("Reconnect", reconnectBounds);
             drawButtonLabel("Clear", clearBounds);
             drawButtonLabel("Settings", settingsBounds);
+            if (backHandler != null) {
+                drawButtonLabel("Back", backBounds);
+            }
         }
         batch.end();
 
@@ -541,6 +560,9 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
         if (settingsBounds.contains(touchX, touchY)) {
             return BUTTON_SETTINGS;
         }
+        if (backHandler != null && backBounds.contains(touchX, touchY)) {
+            return BUTTON_BACK;
+        }
         return BUTTON_NONE;
     }
 
@@ -558,6 +580,12 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
             case BUTTON_SETTINGS:
                 openEndpointSettings();
                 return true;
+            case BUTTON_BACK:
+                if (backHandler != null) {
+                    backHandler.back();
+                    return true;
+                }
+                return false;
             case BUTTON_ENDPOINT_WS:
                 endpointSettingsSecure = false;
                 return true;
@@ -725,5 +753,9 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
     @Override
     public boolean scrolled(final float amountX, final float amountY) {
         return false;
+    }
+
+    public interface BackHandler {
+        void back();
     }
 }

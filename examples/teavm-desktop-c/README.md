@@ -38,6 +38,9 @@ Release variants are also available:
 ## Notes
 
 - The shared demo still comes from `:examples:core`.
+- The launcher opens a selector with `Normal WSS Echo` and `Local permessage-deflate` options.
+- The `Local permessage-deflate` option defaults to `ws://127.0.0.1:8787/`, which lets it talk to a local `:examples:server-demo-pmdeflate` server.
+- The local permessage-deflate demo requests `permessage-deflate`, but the current TeaVM desktop-c backend does not expose negotiated extension details.
 - This example uses the online `teavm-desktop-c` websocket artifact instead of the local backend module.
 - `backend-glfw` currently follows the `-SNAPSHOT` line in the same spirit as `teavm-android`.
 - The generated files are written under `examples/teavm-desktop-c/build/dist`.

@@ -8,11 +8,12 @@ import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.github.czyzby.websocket.CommonWebSockets;
 import com.github.czyzby.websocket.WebSocket;
 import com.github.czyzby.websocket.examples.PerMessageDeflateWebSocketDemo;
-import com.github.czyzby.websocket.examples.WebSocketDemo;
+import com.github.czyzby.websocket.examples.WebSocketDemoSelector;
 import com.github.czyzby.websocket.impl.NvWebSocket;
 
 /** Standard Android launcher for the websocket example. */
 public class MainActivity extends AndroidApplication {
+    private static final String LOCAL_PMDEFLATE_ENDPOINT = "ws://host-machine-ip:8787/";
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -21,15 +22,21 @@ public class MainActivity extends AndroidApplication {
         CommonWebSockets.initiate();
 
         final AndroidApplicationConfiguration configuration = new AndroidApplicationConfiguration();
-        initialize(createPerMessageDeflateDemo(), configuration);
+        initialize(createDemoSelector(), configuration);
+    }
+
+    private static ApplicationListener createDemoSelector() {
+        return WebSocketDemoSelector.createDefaultSelector(LOCAL_PMDEFLATE_ENDPOINT,
+                new WebSocketDemoSelector.DemoFactory() {
+                    @Override
+                    public ApplicationListener create() {
+                        return createPerMessageDeflateDemo();
+                    }
+                });
     }
 
     private static ApplicationListener createPerMessageDeflateDemo() {
-        // Use the original shared demo for a normal wss endpoint test.
-        // return new WebSocketDemo();
-
-        // Use the permessage-deflate demo for local ws://host-machine-ip:8787/ testing.
-        return new PerMessageDeflateWebSocketDemo("ws://host-machine-ip:8787/") {
+        return new PerMessageDeflateWebSocketDemo(LOCAL_PMDEFLATE_ENDPOINT) {
             @Override
             protected String getNegotiatedExtensionsDescription(final WebSocket webSocket) {
                 return webSocket instanceof NvWebSocket
@@ -40,7 +47,7 @@ public class MainActivity extends AndroidApplication {
             @Override
             protected Boolean isPerMessageDeflateNegotiated(final WebSocket webSocket) {
                 return webSocket instanceof NvWebSocket
-                        ? Boolean.valueOf(((NvWebSocket) webSocket).isPerMessageDeflateAgreed())
+                        ? ((NvWebSocket) webSocket).isPerMessageDeflateAgreed()
                         : null;
             }
         };

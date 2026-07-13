@@ -6,7 +6,7 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.github.czyzby.websocket.CommonWebSockets;
 import com.github.czyzby.websocket.WebSocket;
 import com.github.czyzby.websocket.examples.PerMessageDeflateWebSocketDemo;
-import com.github.czyzby.websocket.examples.WebSocketDemo;
+import com.github.czyzby.websocket.examples.WebSocketDemoSelector;
 import com.github.czyzby.websocket.impl.NvWebSocket;
 
 /** Desktop entry point for the websocket sample. */
@@ -21,14 +21,19 @@ public class DesktopLauncher {
         configuration.setTitle("gdx-websockets websockets desktop");
         configuration.setWindowedMode(800, 480);
         configuration.useVsync(true);
-        new Lwjgl3Application(createPerMessageDeflateDemo(), configuration);
+        new Lwjgl3Application(createDemoSelector(), configuration);
+    }
+
+    private static ApplicationListener createDemoSelector() {
+        return WebSocketDemoSelector.createDefaultSelector(new WebSocketDemoSelector.DemoFactory() {
+            @Override
+            public ApplicationListener create() {
+                return createPerMessageDeflateDemo();
+            }
+        });
     }
 
     private static ApplicationListener createPerMessageDeflateDemo() {
-        // Use the original shared demo for a normal wss endpoint test.
-        // return new WebSocketDemo();
-
-        // Use the permessage-deflate demo for local ws://127.0.0.1:8787/ testing.
         return new PerMessageDeflateWebSocketDemo(PerMessageDeflateWebSocketDemo.DEFAULT_PMDEFLATE_ENDPOINT) {
             @Override
             protected String getNegotiatedExtensionsDescription(final WebSocket webSocket) {

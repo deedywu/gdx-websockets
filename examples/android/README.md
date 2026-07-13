@@ -28,9 +28,9 @@ The Android example is only included when an Android SDK is configured through o
 
 - This example reuses `:examples:core`.
 - It initializes `CommonWebSockets` and uses the normal `AndroidApplication` launcher.
-- The launcher starts the shared `PerMessageDeflateWebSocketDemo`.
-- The default endpoint placeholder is `ws://host-machine-ip:8787/`.
+- The launcher opens a selector with `Normal WSS Echo` and `Local permessage-deflate` options.
+- The `Local permessage-deflate` endpoint placeholder is `ws://host-machine-ip:8787/`.
 - Replace `host-machine-ip` with your host machine LAN IP before running against a local `:examples:server-demo-pmdeflate` server.
-- The demo requests `permessage-deflate` and logs whether the server actually negotiated it.
+- The local permessage-deflate demo requests `permessage-deflate` and logs whether the server actually negotiated it.
 - For a real device, change the endpoint in `Settings` to your host LAN IP or another reachable websocket endpoint.
 - Cleartext traffic is enabled in the example manifest so the local `ws://` test server works on Android 9+.
