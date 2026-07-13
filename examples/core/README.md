@@ -14,6 +14,7 @@ It is not meant to be run directly. Instead, other example modules provide the p
 ## Contents
 
 - `WebSocketDemo`: the common websocket sample UI and interaction logic
+- `PerMessageDeflateWebSocketDemo`: a shared variant that requests `permessage-deflate` and logs the negotiated result
 - shared rendering, logging, and reconnect flow used by every example target
 
 ## Notes

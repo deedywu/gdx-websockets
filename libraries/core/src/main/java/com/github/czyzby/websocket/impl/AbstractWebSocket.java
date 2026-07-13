@@ -19,6 +19,7 @@ public abstract class AbstractWebSocket implements WebSocket {
     private final Array<WebSocketListener> listeners = new Array<WebSocketListener>(2); // Default 16 is likely too big.
     protected boolean useTcpNoDelay = true;
     protected boolean verifyHostname = false;
+    protected boolean usePerMessageDeflate = false;
     private Serializer serializer = WebSockets.DEFAULT_SERIALIZER;
     private boolean serializeAsString;
     private boolean sendGracefully;
@@ -45,6 +46,11 @@ public abstract class AbstractWebSocket implements WebSocket {
     @Override
     public void setSendGracefully(final boolean sendGracefully) {
         this.sendGracefully = sendGracefully;
+    }
+
+    @Override
+    public void setPerMessageDeflate(final boolean perMessageDeflate) {
+        usePerMessageDeflate = perMessageDeflate;
     }
 
     public void setUseTcpNoDelay(boolean useTcpNoDelay) {

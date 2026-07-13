@@ -6,6 +6,7 @@ This directory groups runnable samples for `gdx-websockets`.
 
 - `core`: shared demo application code
 - `desktop`: LWJGL3 launcher that initializes `CommonWebSockets`
+- `server-demo-pmdeflate`: Netty websocket server for local `permessage-deflate` negotiation tests
 - `teavm-desktop-c`: TeaVM C / GLFW example using the `teavm-desktop-c` backend
 - `teavm-web`: TeaVM web example using the `teavm-web` backend
 - `gwt`: GWT example using the `html` backend
@@ -20,6 +21,12 @@ From the repository root:
 
 ```bash
 ./gradlew :examples:desktop:run
+```
+
+Local permessage-deflate server:
+
+```bash
+./gradlew :examples:server-demo-pmdeflate:run
 ```
 
 The sample uses the interactive `gdx-teavm` websocket demo flow and connects to `wss://ws.postman-echo.com/raw` by default.

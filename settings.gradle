@@ -51,6 +51,7 @@ if (isJitPack) {
 } else {
     include ':examples:core'
     include ':examples:desktop'
+    include ':examples:server-demo-pmdeflate'
     include ':examples:gwt'
     include ':examples:teavm-desktop-c'
     include ':examples:teavm-web'
