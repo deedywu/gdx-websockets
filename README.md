@@ -241,6 +241,7 @@ In TeaVM iOS launchers, make sure to call `IOSWebSockets.initiate()` before crea
 ```
         WebSocket socket = WebSockets.newSocket(WebSockets.toWebSocketUrl(address, port));
         socket.setSendGracefully(true);
+        socket.setPerMessageDeflate(true); // Optional. Ignored by backends that do not expose extension negotiation.
         socket.addListener(new WebSocketListener() { ... });
         socket.connect();
 ```

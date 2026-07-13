@@ -1,13 +1,13 @@
 package com.github.czyzby.websocket.examples;
 
-import java.lang.reflect.Method;
-
 import com.github.czyzby.websocket.WebSocket;
 
 /** Shared websocket demo that requests {@code permessage-deflate} and logs the negotiated result when available. */
 public class PerMessageDeflateWebSocketDemo extends WebSocketDemo {
+    public static final String DEFAULT_PMDEFLATE_ENDPOINT = "ws://127.0.0.1:8787/";
+
     public PerMessageDeflateWebSocketDemo() {
-        super();
+        super(DEFAULT_PMDEFLATE_ENDPOINT);
     }
 
     public PerMessageDeflateWebSocketDemo(final String endpoint) {
@@ -27,13 +27,13 @@ public class PerMessageDeflateWebSocketDemo extends WebSocketDemo {
     protected void onSocketOpen(final WebSocket webSocket) {
         log("Requested extension: permessage-deflate");
 
-        final String extensionsDescription = invokeStringMethod(webSocket, "getAgreedExtensionsDescription");
-        final Boolean agreed = invokeBooleanMethod(webSocket, "isPerMessageDeflateAgreed");
+        final String extensionsDescription = getNegotiatedExtensionsDescription(webSocket);
+        final Boolean agreed = isPerMessageDeflateNegotiated(webSocket);
 
         if (extensionsDescription != null) {
             log("Negotiated extensions: " + extensionsDescription);
         } else {
-            log("Negotiated extensions: unavailable for backend " + webSocket.getClass().getSimpleName());
+            log("Negotiated extensions: unavailable for this backend");
         }
 
         if (agreed != null) {
@@ -41,23 +41,11 @@ public class PerMessageDeflateWebSocketDemo extends WebSocketDemo {
         }
     }
 
-    private static String invokeStringMethod(final WebSocket webSocket, final String methodName) {
-        try {
-            final Method method = webSocket.getClass().getMethod(methodName);
-            final Object value = method.invoke(webSocket);
-            return value == null ? null : value.toString();
-        } catch (final Exception ignored) {
-            return null;
-        }
+    protected String getNegotiatedExtensionsDescription(final WebSocket webSocket) {
+        return null;
     }
 
-    private static Boolean invokeBooleanMethod(final WebSocket webSocket, final String methodName) {
-        try {
-            final Method method = webSocket.getClass().getMethod(methodName);
-            final Object value = method.invoke(webSocket);
-            return value instanceof Boolean ? (Boolean) value : null;
-        } catch (final Exception ignored) {
-            return null;
-        }
+    protected Boolean isPerMessageDeflateNegotiated(final WebSocket webSocket) {
+        return null;
     }
 }

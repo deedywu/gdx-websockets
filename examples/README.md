@@ -29,8 +29,8 @@ Local permessage-deflate server:
 ./gradlew :examples:server-demo-pmdeflate:run
 ```
 
-The sample uses the interactive `gdx-teavm` websocket demo flow and connects to `wss://ws.postman-echo.com/raw` by default.
-Type text, press `Enter` to send, `F5` to reconnect, and `Esc` to clear the input buffer.
+The desktop and GWT launchers default to `ws://127.0.0.1:8787/` for local `permessage-deflate` testing, and the demo UI can change the address at runtime.
+Type text, press `Enter` to send, `F2` to edit connection settings, `F5` to reconnect, and `Esc` to clear the input buffer.
 
 TeaVM desktop-c build:
 
