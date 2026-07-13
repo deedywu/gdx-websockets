@@ -31,6 +31,7 @@ Local permessage-deflate server:
 
 The desktop and GWT launchers default to `ws://127.0.0.1:8787/` for local `permessage-deflate` testing.
 The Android launcher uses the placeholder `ws://host-machine-ip:8787/` for the same local server.
+The TeaVM Android launcher also uses `ws://host-machine-ip:8787/` and keeps touch controls enabled for mobile testing.
 Replace `host-machine-ip` with your host machine LAN IP, or use the demo UI to switch to another reachable endpoint.
 Type text, press `Enter` to send, `F2` to edit connection settings, `F5` to reconnect, and `Esc` to clear the input buffer.
 

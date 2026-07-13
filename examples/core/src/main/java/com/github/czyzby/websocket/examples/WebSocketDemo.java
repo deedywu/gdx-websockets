@@ -259,21 +259,31 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
         return (secure ? "wss://" : "ws://") + normalizedAddress;
     }
 
-    private void promptForEndpointAddress() {
+    protected void promptForEndpointAddress() {
         Gdx.input.getTextInput(new TextInputListener() {
             @Override
             public void input(final String text) {
                 if (text == null) {
                     return;
                 }
-                endpointSettingsAddressBuffer.setLength(0);
-                endpointSettingsAddressBuffer.append(text.trim());
+                setEndpointSettingsAddress(text);
             }
 
             @Override
             public void canceled() {
             }
         }, "WebSocket Address", endpointSettingsAddressBuffer.toString(), "127.0.0.1:8787/");
+    }
+
+    protected final String getEndpointSettingsAddress() {
+        return endpointSettingsAddressBuffer.toString();
+    }
+
+    protected final void setEndpointSettingsAddress(final String address) {
+        endpointSettingsAddressBuffer.setLength(0);
+        if (address != null) {
+            endpointSettingsAddressBuffer.append(address.trim());
+        }
     }
 
     protected WebSocket createSocket(final String socketEndpoint) {

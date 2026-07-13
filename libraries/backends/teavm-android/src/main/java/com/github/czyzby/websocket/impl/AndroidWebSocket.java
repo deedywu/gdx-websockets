@@ -47,7 +47,7 @@ public class AndroidWebSocket extends AbstractWebSocket {
         if(nativeHandle != 0 && getState() != WebSocketState.CLOSED) {
             close(WebSockets.ABNORMAL_AUTOMATIC_CLOSE_CODE, "reconnect");
         }
-        long handle = createSocket(getUrl());
+        long handle = createSocket(getUrl(), usePerMessageDeflate);
         if(handle == 0) {
             throw new WebSocketException(readReasonBuffer());
         }
@@ -102,6 +102,24 @@ public class AndroidWebSocket extends AbstractWebSocket {
     @Override
     public boolean isSupported() {
         return isNativeSupported();
+    }
+
+    /** @return true if the server agreed to use the {@code permessage-deflate} extension for the current connection. */
+    public boolean isPerMessageDeflateAgreed() {
+        return nativeHandle != 0 && isPerMessageDeflateAgreed(nativeHandle);
+    }
+
+    /** @return description of all extensions agreed during the current handshake or {@code none}. */
+    public String getAgreedExtensionsDescription() {
+        if(nativeHandle == 0) {
+            return "none";
+        }
+        int length = readAgreedExtensionsDescription(nativeHandle, Address.ofData(REASON_BUFFER), REASON_BUFFER_SIZE);
+        if(length <= 0) {
+            return "none";
+        }
+        int size = Math.min(length, REASON_BUFFER_SIZE);
+        return new String(REASON_BUFFER, 0, size, StandardCharsets.UTF_8);
     }
 
     private void handleNativeEvents() {
@@ -192,13 +210,19 @@ public class AndroidWebSocket extends AbstractWebSocket {
     private static native boolean isNativeSupported();
 
     @Import(name = "gdx_teavm_ws_android_create")
-    private static native long createSocket(String url);
+    private static native long createSocket(String url, boolean usePerMessageDeflate);
 
     @Import(name = "gdx_teavm_ws_android_state")
     private static native int socketState(long handle);
 
     @Import(name = "gdx_teavm_ws_android_send_text")
     private static native boolean sendText(long handle, String text);
+
+    @Import(name = "gdx_teavm_ws_android_permessage_deflate_agreed")
+    private static native boolean isPerMessageDeflateAgreed(long handle);
+
+    @Import(name = "gdx_teavm_ws_android_agreed_extensions")
+    private static native int readAgreedExtensionsDescription(long handle, Address targetBuffer, int targetBufferCapacity);
 
     @Import(name = "gdx_teavm_ws_android_close")
     private static native boolean closeSocket(long handle, int code, String reason);

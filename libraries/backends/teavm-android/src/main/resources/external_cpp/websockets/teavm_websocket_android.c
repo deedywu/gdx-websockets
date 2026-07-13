@@ -40,9 +40,15 @@ static JavaVM* g_vm;
 static jclass g_bridge_class;
 static jmethodID g_create_socket_method;
 static jmethodID g_send_text_method;
+static jmethodID g_is_permessage_deflate_agreed_method;
+static jmethodID g_get_agreed_extensions_method;
 static jmethodID g_close_socket_method;
 static jmethodID g_destroy_socket_method;
 static jmethodID g_consume_last_error_method;
+static jclass g_text_input_bridge_class;
+static jmethodID g_show_text_input_method;
+static jmethodID g_get_text_input_state_method;
+static jmethodID g_consume_text_input_method;
 
 static pthread_mutex_t g_handle_lock = PTHREAD_MUTEX_INITIALIZER;
 static TeavmWsHandle* g_handles;
@@ -315,18 +321,62 @@ static int teavm_ws_ensure_bridge(JNIEnv* env) {
         return 0;
     }
 
-    g_create_socket_method = (*env)->GetStaticMethodID(env, g_bridge_class, "createSocket", "(JLjava/lang/String;)Z");
+    g_create_socket_method = (*env)->GetStaticMethodID(env, g_bridge_class, "createSocket", "(JLjava/lang/String;Z)Z");
     g_send_text_method = (*env)->GetStaticMethodID(env, g_bridge_class, "sendText", "(JLjava/lang/String;)Z");
+    g_is_permessage_deflate_agreed_method = (*env)->GetStaticMethodID(env, g_bridge_class,
+            "isPerMessageDeflateAgreed", "(J)Z");
+    g_get_agreed_extensions_method = (*env)->GetStaticMethodID(env, g_bridge_class,
+            "getAgreedExtensionsDescription", "(J)Ljava/lang/String;");
     g_close_socket_method = (*env)->GetStaticMethodID(env, g_bridge_class, "closeSocket", "(JILjava/lang/String;)Z");
     g_destroy_socket_method = (*env)->GetStaticMethodID(env, g_bridge_class, "destroySocket", "(J)V");
     g_consume_last_error_method = (*env)->GetStaticMethodID(env, g_bridge_class, "consumeLastError", "()Ljava/lang/String;");
 
     if(g_create_socket_method == NULL
             || g_send_text_method == NULL
+            || g_is_permessage_deflate_agreed_method == NULL
+            || g_get_agreed_extensions_method == NULL
             || g_close_socket_method == NULL
             || g_destroy_socket_method == NULL
             || g_consume_last_error_method == NULL) {
         teavm_ws_set_error_from_exception(env, "Unable to resolve Android websocket bridge methods.");
+        return 0;
+    }
+    return 1;
+}
+
+static int teavm_ws_ensure_text_input_bridge(JNIEnv* env) {
+    if(env == NULL) {
+        return 0;
+    }
+    if(g_text_input_bridge_class != NULL) {
+        return 1;
+    }
+
+    jclass local_class = (*env)->FindClass(env,
+            "com/github/czyzby/websocket/examples/teavm/android/TeaVMAndroidTextInputBridge");
+    if(local_class == NULL) {
+        teavm_ws_set_error_from_exception(env, "Unable to find TeaVMAndroidTextInputBridge.");
+        return 0;
+    }
+
+    g_text_input_bridge_class = (*env)->NewGlobalRef(env, local_class);
+    (*env)->DeleteLocalRef(env, local_class);
+    if(g_text_input_bridge_class == NULL) {
+        teavm_ws_set_error("Unable to retain TeaVMAndroidTextInputBridge class.");
+        return 0;
+    }
+
+    g_show_text_input_method = (*env)->GetStaticMethodID(env, g_text_input_bridge_class, "showTextInput",
+            "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z");
+    g_get_text_input_state_method = (*env)->GetStaticMethodID(env, g_text_input_bridge_class, "getTextInputState",
+            "(J)I");
+    g_consume_text_input_method = (*env)->GetStaticMethodID(env, g_text_input_bridge_class, "consumeTextInput",
+            "(J)Ljava/lang/String;");
+
+    if(g_show_text_input_method == NULL
+            || g_get_text_input_state_method == NULL
+            || g_consume_text_input_method == NULL) {
+        teavm_ws_set_error_from_exception(env, "Unable to resolve Android text input bridge methods.");
         return 0;
     }
     return 1;
@@ -341,7 +391,7 @@ int gdx_teavm_ws_android_supported(void) {
     return supported;
 }
 
-int64_t gdx_teavm_ws_android_create(const char* url) {
+int64_t gdx_teavm_ws_android_create(const char* url, int use_per_message_deflate) {
     teavm_ws_set_error(NULL);
     if(url == NULL || url[0] == '\0') {
         teavm_ws_set_error("A websocket URL is required.");
@@ -371,7 +421,8 @@ int64_t gdx_teavm_ws_android_create(const char* url) {
     pthread_mutex_unlock(&g_handle_lock);
 
     jstring url_value = (*env)->NewStringUTF(env, url);
-    jboolean created = (*env)->CallStaticBooleanMethod(env, g_bridge_class, g_create_socket_method, (jlong)handle->id, url_value);
+    jboolean created = (*env)->CallStaticBooleanMethod(env, g_bridge_class, g_create_socket_method, (jlong)handle->id,
+            url_value, (jboolean)(use_per_message_deflate != 0));
     if(url_value != NULL) {
         (*env)->DeleteLocalRef(env, url_value);
     }
@@ -453,6 +504,152 @@ int gdx_teavm_ws_android_send_text(int64_t handle_id, const char* text) {
     teavm_ws_detach_env(did_attach);
     teavm_ws_release_handle(handle);
     return sent == JNI_TRUE;
+}
+
+int gdx_teavm_ws_android_permessage_deflate_agreed(int64_t handle_id) {
+    TeavmWsHandle* handle = teavm_ws_acquire_handle(handle_id);
+    if(handle == NULL) {
+        return 0;
+    }
+
+    int did_attach = 0;
+    JNIEnv* env = teavm_ws_attach_env(&did_attach);
+    if(!teavm_ws_ensure_bridge(env)) {
+        teavm_ws_detach_env(did_attach);
+        teavm_ws_release_handle(handle);
+        return 0;
+    }
+
+    jboolean agreed = (*env)->CallStaticBooleanMethod(env, g_bridge_class, g_is_permessage_deflate_agreed_method,
+            (jlong)handle_id);
+    if((*env)->ExceptionCheck(env)) {
+        (*env)->ExceptionClear(env);
+        agreed = JNI_FALSE;
+    }
+
+    teavm_ws_detach_env(did_attach);
+    teavm_ws_release_handle(handle);
+    return agreed == JNI_TRUE;
+}
+
+int gdx_teavm_ws_android_agreed_extensions(int64_t handle_id, void* target_buffer, int target_buffer_capacity) {
+    TeavmWsHandle* handle = teavm_ws_acquire_handle(handle_id);
+    if(handle == NULL) {
+        return teavm_ws_copy_string((char*)target_buffer, target_buffer_capacity, "none");
+    }
+
+    int did_attach = 0;
+    JNIEnv* env = teavm_ws_attach_env(&did_attach);
+    if(!teavm_ws_ensure_bridge(env)) {
+        teavm_ws_detach_env(did_attach);
+        teavm_ws_release_handle(handle);
+        return teavm_ws_copy_string((char*)target_buffer, target_buffer_capacity, "none");
+    }
+
+    jstring text = (jstring)(*env)->CallStaticObjectMethod(env, g_bridge_class, g_get_agreed_extensions_method,
+            (jlong)handle_id);
+    if((*env)->ExceptionCheck(env)) {
+        (*env)->ExceptionClear(env);
+        text = NULL;
+    }
+
+    int length = 0;
+    if(text != NULL) {
+        const char* chars = (*env)->GetStringUTFChars(env, text, NULL);
+        if(chars != NULL) {
+            length = teavm_ws_copy_string((char*)target_buffer, target_buffer_capacity, chars);
+            (*env)->ReleaseStringUTFChars(env, text, chars);
+        }
+        (*env)->DeleteLocalRef(env, text);
+    }
+    if(length <= 0) {
+        length = teavm_ws_copy_string((char*)target_buffer, target_buffer_capacity, "none");
+    }
+
+    teavm_ws_detach_env(did_attach);
+    teavm_ws_release_handle(handle);
+    return length;
+}
+
+int gdx_teavm_ws_android_text_input_show(int64_t request_id, const char* title, const char* text, const char* hint) {
+    teavm_ws_set_error(NULL);
+    int did_attach = 0;
+    JNIEnv* env = teavm_ws_attach_env(&did_attach);
+    if(!teavm_ws_ensure_text_input_bridge(env)) {
+        teavm_ws_detach_env(did_attach);
+        return 0;
+    }
+
+    jstring title_value = (*env)->NewStringUTF(env, title == NULL ? "" : title);
+    jstring text_value = (*env)->NewStringUTF(env, text == NULL ? "" : text);
+    jstring hint_value = (*env)->NewStringUTF(env, hint == NULL ? "" : hint);
+    jboolean shown = (*env)->CallStaticBooleanMethod(env, g_text_input_bridge_class, g_show_text_input_method,
+            (jlong)request_id, title_value, text_value, hint_value);
+    if(title_value != NULL) {
+        (*env)->DeleteLocalRef(env, title_value);
+    }
+    if(text_value != NULL) {
+        (*env)->DeleteLocalRef(env, text_value);
+    }
+    if(hint_value != NULL) {
+        (*env)->DeleteLocalRef(env, hint_value);
+    }
+
+    if((*env)->ExceptionCheck(env)) {
+        teavm_ws_set_error_from_exception(env, "Android text input dialog failed.");
+        shown = JNI_FALSE;
+    }
+
+    teavm_ws_detach_env(did_attach);
+    return shown == JNI_TRUE;
+}
+
+int gdx_teavm_ws_android_text_input_state(int64_t request_id) {
+    int did_attach = 0;
+    JNIEnv* env = teavm_ws_attach_env(&did_attach);
+    if(!teavm_ws_ensure_text_input_bridge(env)) {
+        teavm_ws_detach_env(did_attach);
+        return 3;
+    }
+
+    jint state = (*env)->CallStaticIntMethod(env, g_text_input_bridge_class, g_get_text_input_state_method,
+            (jlong)request_id);
+    if((*env)->ExceptionCheck(env)) {
+        (*env)->ExceptionClear(env);
+        state = 3;
+    }
+
+    teavm_ws_detach_env(did_attach);
+    return (int)state;
+}
+
+int gdx_teavm_ws_android_text_input_result(int64_t request_id, void* target_buffer, int target_buffer_capacity) {
+    int did_attach = 0;
+    JNIEnv* env = teavm_ws_attach_env(&did_attach);
+    if(!teavm_ws_ensure_text_input_bridge(env)) {
+        teavm_ws_detach_env(did_attach);
+        return teavm_ws_copy_string((char*)target_buffer, target_buffer_capacity, "");
+    }
+
+    jstring text = (jstring)(*env)->CallStaticObjectMethod(env, g_text_input_bridge_class,
+            g_consume_text_input_method, (jlong)request_id);
+    if((*env)->ExceptionCheck(env)) {
+        (*env)->ExceptionClear(env);
+        text = NULL;
+    }
+
+    int length = 0;
+    if(text != NULL) {
+        const char* chars = (*env)->GetStringUTFChars(env, text, NULL);
+        if(chars != NULL) {
+            length = teavm_ws_copy_string((char*)target_buffer, target_buffer_capacity, chars);
+            (*env)->ReleaseStringUTFChars(env, text, chars);
+        }
+        (*env)->DeleteLocalRef(env, text);
+    }
+
+    teavm_ws_detach_env(did_attach);
+    return length;
 }
 
 int gdx_teavm_ws_android_close(int64_t handle_id, int code, const char* reason) {

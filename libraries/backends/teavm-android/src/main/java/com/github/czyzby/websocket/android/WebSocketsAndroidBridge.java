@@ -3,6 +3,7 @@ package com.github.czyzby.websocket.android;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketException;
+import com.neovisionaries.ws.client.WebSocketExtension;
 import com.neovisionaries.ws.client.WebSocketFactory;
 import com.neovisionaries.ws.client.WebSocketFrame;
 import com.neovisionaries.ws.client.WebSocketState;
@@ -28,7 +29,7 @@ public class WebSocketsAndroidBridge {
     private WebSocketsAndroidBridge() {
     }
 
-    public static boolean createSocket(long handle, String url) {
+    public static boolean createSocket(long handle, String url, boolean usePerMessageDeflate) {
         lastError = "";
         if(url == null || url.trim().isEmpty()) {
             lastError = "A websocket URL is required.";
@@ -36,6 +37,9 @@ public class WebSocketsAndroidBridge {
         }
         try {
             WebSocket socket = FACTORY.createSocket(url.trim());
+            if(usePerMessageDeflate) {
+                socket.addExtension(WebSocketExtension.PERMESSAGE_DEFLATE);
+            }
             socket.setDirectTextMessage(true);
             socket.addListener(new BridgeListener(handle));
             if(SOCKETS.putIfAbsent(handle, socket) != null) {
@@ -99,6 +103,32 @@ public class WebSocketsAndroidBridge {
         String value = lastError;
         lastError = "";
         return value;
+    }
+
+    public static boolean isPerMessageDeflateAgreed(long handle) {
+        WebSocket socket = SOCKETS.get(handle);
+        if(socket == null) {
+            return false;
+        }
+        List<WebSocketExtension> extensions = socket.getAgreedExtensions();
+        if(extensions == null) {
+            return false;
+        }
+        for(WebSocketExtension extension : extensions) {
+            if(extension != null && WebSocketExtension.PERMESSAGE_DEFLATE.equalsIgnoreCase(extension.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static String getAgreedExtensionsDescription(long handle) {
+        WebSocket socket = SOCKETS.get(handle);
+        if(socket == null) {
+            return "none";
+        }
+        List<WebSocketExtension> extensions = socket.getAgreedExtensions();
+        return extensions == null || extensions.isEmpty() ? "none" : extensions.toString();
     }
 
     private static int mapState(WebSocketState state) {

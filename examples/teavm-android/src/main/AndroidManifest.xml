@@ -4,6 +4,7 @@
     <application
         android:allowBackup="false"
         android:label="gdx-websockets teavm android"
+        android:usesCleartextTraffic="true"
         android:theme="@style/AppTheme">
         <activity
             android:name="com.github.czyzby.websocket.examples.teavm.android.MainActivity"

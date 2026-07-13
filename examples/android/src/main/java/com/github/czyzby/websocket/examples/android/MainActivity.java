@@ -25,6 +25,10 @@ public class MainActivity extends AndroidApplication {
     }
 
     private static ApplicationListener createPerMessageDeflateDemo() {
+        // Use the original shared demo for a normal wss endpoint test.
+        // return new WebSocketDemo();
+
+        // Use the permessage-deflate demo for local ws://host-machine-ip:8787/ testing.
         return new PerMessageDeflateWebSocketDemo("ws://host-machine-ip:8787/") {
             @Override
             protected String getNegotiatedExtensionsDescription(final WebSocket webSocket) {
