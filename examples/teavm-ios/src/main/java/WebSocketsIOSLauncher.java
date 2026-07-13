@@ -1,5 +1,5 @@
 import com.github.czyzby.websocket.IOSWebSockets;
-import com.github.czyzby.websocket.examples.WebSocketDemo;
+import com.github.czyzby.websocket.examples.WebSocketDemoSelector;
 import com.github.xpenatan.gdx.teavm.backends.ios.IOSApplication;
 import com.github.xpenatan.gdx.teavm.backends.ios.IOSApplicationConfiguration;
 import com.github.xpenatan.gdx.teavm.backends.ios.IOSFiles;
@@ -22,6 +22,6 @@ public class WebSocketsIOSLauncher {
         IOSWebSockets.initiate();
 
         final IOSApplicationConfiguration config = new IOSApplicationConfiguration();
-        new IOSApplication(new WebSocketDemo(WebSocketDemo.DEFAULT_URL, true), config);
+        new IOSApplication(WebSocketDemoSelector.createDefaultSelector(), config);
     }
 }

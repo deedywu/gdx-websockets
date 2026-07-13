@@ -6,10 +6,11 @@ This directory groups runnable samples for `gdx-websockets`.
 
 - `core`: shared demo application code
 - `desktop`: LWJGL3 launcher that initializes `CommonWebSockets`
+- `server-demo-pmdeflate`: Netty websocket server for local `permessage-deflate` negotiation tests
 - `teavm-desktop-c`: TeaVM C / GLFW example using the `teavm-desktop-c` backend
 - `teavm-web`: TeaVM web example using the `teavm-web` backend
 - `gwt`: GWT example using the `html` backend
-- `android`: standard Android launcher using `common` when Android SDK is configured
+- `android`: standard Android launcher using `common` with the permessage-deflate demo when Android SDK is configured
 - `ios`: standard RoboVM MetalANGLE iOS launcher using `common` when running on macOS
 - `teavm-android`: TeaVM Android launcher using the `teavm-android` backend when Android SDK is configured
 - `teavm-ios`: TeaVM iOS launcher using the `teavm-ios` backend when running on macOS
@@ -22,8 +23,18 @@ From the repository root:
 ./gradlew :examples:desktop:run
 ```
 
-The sample uses the interactive `gdx-teavm` websocket demo flow and connects to `wss://ws.postman-echo.com/raw` by default.
-Type text, press `Enter` to send, `F5` to reconnect, and `Esc` to clear the input buffer.
+Local permessage-deflate server:
+
+```bash
+./gradlew :examples:server-demo-pmdeflate:run
+```
+
+The desktop, GWT, Android, iOS, TeaVM web, TeaVM desktop-c, TeaVM Android, and TeaVM iOS launchers open a shared selector with `Normal WSS Echo` and `Local permessage-deflate` options.
+The desktop, GWT, iOS simulator, TeaVM web, TeaVM desktop-c, and TeaVM iOS simulator `Local permessage-deflate` option uses `ws://127.0.0.1:8787/` for local testing.
+The Android and TeaVM Android `Local permessage-deflate` option uses the placeholder `ws://host-machine-ip:8787/` for the same local server.
+Replace `host-machine-ip` with your host machine LAN IP, or use the demo UI to switch to another reachable endpoint.
+For a real iOS or TeaVM iOS device, use the demo UI to replace `127.0.0.1` with your host machine LAN IP.
+Type text, press `Enter` to send, `F2` to edit connection settings, `F5` to reconnect, and `Esc` to clear the input buffer.
 
 TeaVM desktop-c build:
 

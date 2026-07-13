@@ -4,14 +4,10 @@ This example ports the `gdx-teavm` Android websocket sample into this repository
 
 It uses the TeaVM Android workflow, not the standard libGDX Android backend.
 
-## Repositories
+## Repository wiring
 
-This module is intended to consume published `gdx-teavm` artifacts from Maven:
-
-- release line such as `1.5.6` when available
-- or `-SNAPSHOT` from the Sonatype snapshots repository
-
-It also consumes the published `gdx-websockets:teavm-android` artifact instead of the local project module.
+- It consumes published `gdx-teavm` artifacts from Maven.
+- It consumes the local `:libraries:backends:teavm-android` project module so TeaVM Android backend changes in this repository are picked up immediately during local builds.
 
 ## Enable the module
 
@@ -38,4 +34,10 @@ The module is only included when an Android SDK is configured through one of:
 - Shared demo code still comes from `:examples:core`.
 - The TeaVM Android main class is `WebSocketsAndroidLauncher`.
 - The Android Activity is a minimal `TeaAndroidActivity` subclass.
-- This variant still reuses the shared `WebSocketDemo`, but enables on-screen touch buttons because TeaVM Android does not receive the same keyboard events as the normal Android example.
+- The launcher opens a selector with `Normal WSS Echo` and `Local permessage-deflate` options.
+- The `Local permessage-deflate` endpoint placeholder is `ws://host-machine-ip:8787/`.
+- Replace `host-machine-ip` with your host machine LAN IP before testing against a local `:examples:server-demo-pmdeflate` server.
+- Touch-friendly on-screen controls stay enabled because TeaVM Android does not receive the same keyboard events as the normal Android example.
+- Tapping the Address field opens a native Android text input dialog because TeaVM Android does not currently route `Gdx.input.getTextInput` to an editable popup.
+- The local permessage-deflate demo requests `permessage-deflate` and logs whether the server actually negotiated it.
+- Cleartext traffic is enabled in the example manifest so the local `ws://` test server works on Android 9+.

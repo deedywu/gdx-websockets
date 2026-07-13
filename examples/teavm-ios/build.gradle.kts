@@ -54,6 +54,9 @@ val generatedIOSExternalCppDir = generatedIOSDir.map { it.dir("c/external_cpp") 
 val generatedIOSXcodeProjectFile = generatedIOSDir.map {
     it.file("xcode/$iosXcodeProjectName.xcodeproj/project.pbxproj")
 }
+val generatedIOSXcodeInfoPlistFile = generatedIOSDir.map {
+    it.file("xcode/Sources/Info.plist")
+}
 val generatedIOSXcodeProjectDir = generatedIOSDir.map {
     it.dir("xcode/$iosXcodeProjectName.xcodeproj")
 }
@@ -70,6 +73,7 @@ val iosDevicectlAppBundle = providers.provider {
 }
 val localIOSWebSocketExternalCppDir = project(":libraries:backends:teavm-ios")
     .layout.projectDirectory.dir("src/main/resources/external_cpp")
+val localIOSXcodeSourcesTemplateDir = layout.projectDirectory.dir("src/main/resources/templates/ios/xcode/Sources")
 val gdxFontConfiguration = configurations.detachedConfiguration(
     dependencies.create("com.badlogicgames.gdx:gdx:$gdxVersion")
 ).apply {
@@ -125,6 +129,12 @@ val patchGeneratedIOSNativeProject = tasks.register("patchGeneratedIOSNativeProj
         copy {
             from(localIOSWebSocketExternalCppDir)
             into(generatedIOSExternalCppDir)
+        }
+
+        val infoPlistTemplateFile = localIOSXcodeSourcesTemplateDir.file("Info.plist").asFile
+        val infoPlistFile = generatedIOSXcodeInfoPlistFile.get().asFile
+        if (infoPlistTemplateFile.isFile && infoPlistFile.isFile) {
+            infoPlistFile.writeText(infoPlistTemplateFile.readText())
         }
 
         val appIncludeFile = generatedIOSAppIncludeFile.get().asFile

@@ -6,7 +6,6 @@ plugins {
 }
 
 val gdxVersion: String by rootProject.extra
-val wsVersion = rootProject.version.toString()
 
 val generatedAndroidDir = layout.buildDirectory.dir("generated/gdx-teavm/android")
 val generatedAndroidCMakeFile = generatedAndroidDir.map { it.file("CMakeLists.txt") }
@@ -106,9 +105,9 @@ android {
 }
 
 dependencies {
-    implementation("com.github.deedywu.gdx-websockets:teavm-android:$wsVersion")
+    implementation(project(":libraries:backends:teavm-android"))
     add("teavm", project(":examples:core"))
-    add("teavm", "com.github.deedywu.gdx-websockets:teavm-android:$wsVersion")
+    add("teavm", project(":libraries:backends:teavm-android"))
 }
 
 gdxTeaVM {

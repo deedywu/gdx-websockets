@@ -63,6 +63,13 @@ public interface WebSocket {
      *            listeners. Defaults to false. */
     void setSendGracefully(boolean sendGracefully);
 
+    /** @param perMessageDeflate if true, implementation should try to negotiate the
+     *            {@code permessage-deflate} extension during the websocket handshake when the platform can control
+     *            extensions. Implementations that do not support or expose extension negotiation may ignore this
+     *            setting. Defaults to false. Set before {@link #connect()} for consistent behavior. */
+    default void setPerMessageDeflate(boolean perMessageDeflate) {
+    }
+
     /**
      * @param tcpNoDelay set this flag to configure if websocket should use TCP_NODELAY. This does
      *                   not change behaviour on HTML5, where it is activated on most browsers.

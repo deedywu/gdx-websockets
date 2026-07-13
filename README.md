@@ -104,7 +104,7 @@ dependencies {
 
 Specify the `wsVersion` in the `gradle.properties` file in the root directory. Use a tag, branch snapshot, or commit published from this fork:
 
-`wsVersion=2.0.4-rc2`
+`wsVersion=2.0.4`
 
 `wsVersion=master-SNAPSHOT`
 
@@ -241,11 +241,21 @@ In TeaVM iOS launchers, make sure to call `IOSWebSockets.initiate()` before crea
 ```
         WebSocket socket = WebSockets.newSocket(WebSockets.toWebSocketUrl(address, port));
         socket.setSendGracefully(true);
+        socket.setPerMessageDeflate(true); // Optional. Set before connect() to request permessage-deflate.
         socket.addListener(new WebSocketListener() { ... });
         socket.connect();
 ```
 
+`setPerMessageDeflate(true)` is a core API flag. Backends that can control websocket extension negotiation request
+`permessage-deflate` during the handshake; other backends may ignore the flag.
+
 ## Changes
+
+### 2.0.4
+
+- Added core API support for requesting `permessage-deflate` before connecting, with backend support where websocket extension negotiation is exposed.
+- Unified the websocket examples across desktop, GWT, Android, iOS, and TeaVM targets with a shared demo selector, consistent launcher behavior, and matching mobile UI scaling.
+- Added a local Netty `permessage-deflate` test server plus example flows for local websocket testing and extension negotiation reporting where supported.
 
 ### 2.0.3
 
@@ -263,4 +273,8 @@ In TeaVM iOS launchers, make sure to call `IOSWebSockets.initiate()` before crea
 
 - Prepared the fork for JitPack releases that work for JDK 17 consumers.
 - Centralized Java release configuration in the root Gradle build: Java 8 for regular modules and Java 11 for TeaVM modules.
-- Updated the published version from `2.0.0` to `2.0.1`.
+- Initial release as `2.0.1`.
+
+### Before 2.0.1
+
+- Versions before `2.0.1` are equivalent to [MrStahlfelge/gdx-websockets](https://github.com/MrStahlfelge/gdx-websockets) `1.9.10.3`.

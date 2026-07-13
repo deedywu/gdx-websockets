@@ -1,7 +1,7 @@
 package com.github.czyzby.websocket.examples.teavmweb;
 
 import com.github.czyzby.websocket.TeaWebSockets;
-import com.github.czyzby.websocket.examples.WebSocketDemo;
+import com.github.czyzby.websocket.examples.WebSocketDemoSelector;
 import com.github.xpenatan.gdx.teavm.backends.web.WebApplication;
 import com.github.xpenatan.gdx.teavm.backends.web.WebApplicationConfiguration;
 
@@ -18,6 +18,6 @@ public class TeaVMWebLauncher {
         config.height = 0;
         config.showDownloadLogs = true;
 
-        new WebApplication(new WebSocketDemo(), config);
+        new WebApplication(WebSocketDemoSelector.createDefaultSelector(), config);
     }
 }

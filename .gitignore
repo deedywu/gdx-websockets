@@ -127,17 +127,7 @@ nb-configuration.xml
 /local.properties
 .gradle/
 gradle-app.setting
-/build/
-/common/build/
-/core/build/
-/serialization/build/
-/html/build/
-/teavm-web/build/
-/teavm-desktop-c/build/
-/teavm-android/build/
-/teavm-ios/build/
-/ios/build/
-**/build/
+**/build/*
 
 ## OS Specific
 .DS_Store
