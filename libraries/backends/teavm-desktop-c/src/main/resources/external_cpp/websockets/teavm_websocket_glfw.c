@@ -25,6 +25,7 @@ typedef struct TeavmWsEvent {
     int data0;
     int data1;
     char* message;
+    struct TeavmWsEvent* next;
 } TeavmWsEvent;
 
 typedef struct TeavmWsHandle {
@@ -43,7 +44,8 @@ typedef struct TeavmWsHandle {
     volatile LONG close_code;
     HANDLE thread;
     CRITICAL_SECTION event_lock;
-    TeavmWsEvent event;
+    TeavmWsEvent* event_head;
+    TeavmWsEvent* event_tail;
 } TeavmWsHandle;
 
 static char g_last_error[2048];
@@ -55,6 +57,42 @@ static void teavm_ws_set_error(const char* message) {
     }
     strncpy(g_last_error, message, sizeof(g_last_error) - 1);
     g_last_error[sizeof(g_last_error) - 1] = '\0';
+}
+
+static void teavm_ws_trim_trailing_whitespace(char* value) {
+    if(value == NULL) {
+        return;
+    }
+    size_t length = strlen(value);
+    while(length > 0 && value[length - 1] <= ' ') {
+        value[length - 1] = '\0';
+        length--;
+    }
+}
+
+static void teavm_ws_set_windows_error_code(const char* message, DWORD error_code) {
+    if(error_code == ERROR_SUCCESS) {
+        teavm_ws_set_error(message);
+        return;
+    }
+
+    char detail[512];
+    detail[0] = '\0';
+    FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+            NULL, error_code, 0, detail, sizeof(detail), NULL);
+    teavm_ws_trim_trailing_whitespace(detail);
+
+    char buffer[2048];
+    if(detail[0] == '\0') {
+        snprintf(buffer, sizeof(buffer), "%s Windows error %lu.", message, (unsigned long)error_code);
+    } else {
+        snprintf(buffer, sizeof(buffer), "%s Windows error %lu: %s", message, (unsigned long)error_code, detail);
+    }
+    teavm_ws_set_error(buffer);
+}
+
+static void teavm_ws_set_last_windows_error(const char* message) {
+    teavm_ws_set_windows_error_code(message, GetLastError());
 }
 
 static int teavm_ws_copy_string(char* target, int capacity, const char* value) {
@@ -236,6 +274,9 @@ static int teavm_ws_parse_url(const char* url, TeavmWsHandle* handle) {
 }
 
 static void teavm_ws_destroy_event(TeavmWsEvent* event) {
+    if(event == NULL) {
+        return;
+    }
     if(event->message != NULL) {
         free(event->message);
         event->message = NULL;
@@ -243,21 +284,46 @@ static void teavm_ws_destroy_event(TeavmWsEvent* event) {
     event->type = WS_EVENT_NONE;
     event->data0 = 0;
     event->data1 = 0;
+    event->next = NULL;
+}
+
+static void teavm_ws_free_event_queue(TeavmWsHandle* handle) {
+    TeavmWsEvent* event = handle->event_head;
+    while(event != NULL) {
+        TeavmWsEvent* next = event->next;
+        teavm_ws_destroy_event(event);
+        free(event);
+        event = next;
+    }
+    handle->event_head = NULL;
+    handle->event_tail = NULL;
 }
 
 static void teavm_ws_push_event(TeavmWsHandle* handle, int type, int data0, int data1, const char* message) {
-    EnterCriticalSection(&handle->event_lock);
-    teavm_ws_destroy_event(&handle->event);
-    handle->event.type = type;
-    handle->event.data0 = data0;
-    handle->event.data1 = data1;
+    TeavmWsEvent* event = (TeavmWsEvent*)calloc(1, sizeof(TeavmWsEvent));
+    if(event == NULL) {
+        return;
+    }
+    event->type = type;
+    event->data0 = data0;
+    event->data1 = data1;
+
     if(message != NULL) {
         size_t length = strlen(message);
-        handle->event.message = (char*)calloc(length + 1, sizeof(char));
-        if(handle->event.message != NULL) {
-            memcpy(handle->event.message, message, length);
-            handle->event.message[length] = '\0';
+        event->message = (char*)calloc(length + 1, sizeof(char));
+        if(event->message != NULL) {
+            memcpy(event->message, message, length);
+            event->message[length] = '\0';
         }
+    }
+
+    EnterCriticalSection(&handle->event_lock);
+    if(handle->event_tail == NULL) {
+        handle->event_head = event;
+        handle->event_tail = event;
+    } else {
+        handle->event_tail->next = event;
+        handle->event_tail = event;
     }
     LeaveCriticalSection(&handle->event_lock);
 }
@@ -328,14 +394,14 @@ int64_t gdx_teavm_ws_glfw_create(const char* url) {
             WINHTTP_NO_PROXY_BYPASS,
             0);
     if(handle->session == NULL) {
-        teavm_ws_set_error("WinHTTP session creation failed.");
+        teavm_ws_set_last_windows_error("WinHTTP session creation failed.");
         gdx_teavm_ws_glfw_destroy((int64_t)(intptr_t)handle);
         return 0;
     }
 
     handle->connection = WinHttpConnect(handle->session, handle->host, handle->port, 0);
     if(handle->connection == NULL) {
-        teavm_ws_set_error("WinHTTP connection failed.");
+        teavm_ws_set_last_windows_error("WinHTTP connection failed.");
         gdx_teavm_ws_glfw_destroy((int64_t)(intptr_t)handle);
         return 0;
     }
@@ -344,33 +410,33 @@ int64_t gdx_teavm_ws_glfw_create(const char* url) {
     handle->request = WinHttpOpenRequest(handle->connection, L"GET", handle->path,
             NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, flags);
     if(handle->request == NULL) {
-        teavm_ws_set_error("WinHTTP request creation failed.");
+        teavm_ws_set_last_windows_error("WinHTTP request creation failed.");
         gdx_teavm_ws_glfw_destroy((int64_t)(intptr_t)handle);
         return 0;
     }
 
     if(!WinHttpSetOption(handle->request, WINHTTP_OPTION_UPGRADE_TO_WEB_SOCKET, NULL, 0)) {
-        teavm_ws_set_error("Failed to enable WinHTTP websocket upgrade.");
+        teavm_ws_set_last_windows_error("Failed to enable WinHTTP websocket upgrade.");
         gdx_teavm_ws_glfw_destroy((int64_t)(intptr_t)handle);
         return 0;
     }
 
     if(!WinHttpSendRequest(handle->request, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
             WINHTTP_NO_REQUEST_DATA, 0, 0, 0)) {
-        teavm_ws_set_error("Failed to send websocket handshake request.");
+        teavm_ws_set_last_windows_error("Failed to send websocket handshake request.");
         gdx_teavm_ws_glfw_destroy((int64_t)(intptr_t)handle);
         return 0;
     }
 
     if(!WinHttpReceiveResponse(handle->request, NULL)) {
-        teavm_ws_set_error("Failed to receive websocket handshake response.");
+        teavm_ws_set_last_windows_error("Failed to receive websocket handshake response.");
         gdx_teavm_ws_glfw_destroy((int64_t)(intptr_t)handle);
         return 0;
     }
 
     handle->websocket = WinHttpWebSocketCompleteUpgrade(handle->request, 0);
     if(handle->websocket == NULL) {
-        teavm_ws_set_error("WinHTTP websocket upgrade failed.");
+        teavm_ws_set_last_windows_error("WinHTTP websocket upgrade failed.");
         gdx_teavm_ws_glfw_destroy((int64_t)(intptr_t)handle);
         return 0;
     }
@@ -380,7 +446,7 @@ int64_t gdx_teavm_ws_glfw_create(const char* url) {
 
     handle->thread = CreateThread(NULL, 0, teavm_ws_reader_thread, handle, 0, NULL);
     if(handle->thread == NULL) {
-        teavm_ws_set_error("Failed to start websocket receive thread.");
+        teavm_ws_set_last_windows_error("Failed to start websocket receive thread.");
         gdx_teavm_ws_glfw_destroy((int64_t)(intptr_t)handle);
         return 0;
     }
@@ -447,19 +513,28 @@ int gdx_teavm_ws_glfw_poll_event(int64_t handle_value, int32_t* event_data, void
     event_data[3] = 0;
 
     EnterCriticalSection(&handle->event_lock);
-    if(handle->event.type != WS_EVENT_NONE) {
-        event_data[0] = handle->event.type;
-        event_data[1] = handle->event.data0;
-        event_data[2] = handle->event.data1;
-        if(message_buffer != NULL && message_buffer_capacity > 0 && handle->event.message != NULL) {
-            teavm_ws_copy_string((char*)message_buffer, message_buffer_capacity, handle->event.message);
+    TeavmWsEvent* event = handle->event_head;
+    if(event != NULL) {
+        handle->event_head = event->next;
+        if(handle->event_head == NULL) {
+            handle->event_tail = NULL;
         }
-        teavm_ws_destroy_event(&handle->event);
-        LeaveCriticalSection(&handle->event_lock);
-        return 1;
     }
     LeaveCriticalSection(&handle->event_lock);
-    return 0;
+
+    if(event == NULL) {
+        return 0;
+    }
+
+    event_data[0] = event->type;
+    event_data[1] = event->data0;
+    event_data[2] = event->data1;
+    if(message_buffer != NULL && message_buffer_capacity > 0 && event->message != NULL) {
+        teavm_ws_copy_string((char*)message_buffer, message_buffer_capacity, event->message);
+    }
+    teavm_ws_destroy_event(event);
+    free(event);
+    return 1;
 }
 
 void gdx_teavm_ws_glfw_destroy(int64_t handle_value) {
@@ -495,7 +570,7 @@ void gdx_teavm_ws_glfw_destroy(int64_t handle_value) {
         free(handle->path);
     }
     EnterCriticalSection(&handle->event_lock);
-    teavm_ws_destroy_event(&handle->event);
+    teavm_ws_free_event_queue(handle);
     LeaveCriticalSection(&handle->event_lock);
     DeleteCriticalSection(&handle->event_lock);
     free(handle);
@@ -580,6 +655,7 @@ typedef struct TeavmWsEvent {
     int data0;
     int data1;
     char* message;
+    struct TeavmWsEvent* next;
 } TeavmWsEvent;
 
 typedef struct TeavmWsHandle {
@@ -592,7 +668,8 @@ typedef struct TeavmWsHandle {
     int close_code;
     char* close_reason;
     char error_buffer[TEAVM_WS_LINUX_ERROR_BUFFER_SIZE];
-    TeavmWsEvent event;
+    TeavmWsEvent* event_head;
+    TeavmWsEvent* event_tail;
 } TeavmWsHandle;
 
 typedef CURLcode (*TeavmCurlGlobalInitFn)(long flags);
@@ -667,6 +744,9 @@ static void teavm_ws_sleep_millis(long millis) {
 }
 
 static void teavm_ws_destroy_event(TeavmWsEvent* event) {
+    if(event == NULL) {
+        return;
+    }
     if(event->message != NULL) {
         free(event->message);
         event->message = NULL;
@@ -674,21 +754,46 @@ static void teavm_ws_destroy_event(TeavmWsEvent* event) {
     event->type = WS_EVENT_NONE;
     event->data0 = 0;
     event->data1 = 0;
+    event->next = NULL;
+}
+
+static void teavm_ws_free_event_queue(TeavmWsHandle* handle) {
+    TeavmWsEvent* event = handle->event_head;
+    while(event != NULL) {
+        TeavmWsEvent* next = event->next;
+        teavm_ws_destroy_event(event);
+        free(event);
+        event = next;
+    }
+    handle->event_head = NULL;
+    handle->event_tail = NULL;
 }
 
 static void teavm_ws_push_event_bytes(TeavmWsHandle* handle, int type, int data0, int data1,
                                       const char* message, size_t message_length) {
-    pthread_mutex_lock(&handle->event_lock);
-    teavm_ws_destroy_event(&handle->event);
-    handle->event.type = type;
-    handle->event.data0 = data0;
-    handle->event.data1 = data1;
+    TeavmWsEvent* event = (TeavmWsEvent*)calloc(1, sizeof(TeavmWsEvent));
+    if(event == NULL) {
+        return;
+    }
+    event->type = type;
+    event->data0 = data0;
+    event->data1 = data1;
+
     if(message != NULL && message_length > 0) {
-        handle->event.message = (char*)calloc(message_length + 1, sizeof(char));
-        if(handle->event.message != NULL) {
-            memcpy(handle->event.message, message, message_length);
-            handle->event.message[message_length] = '\0';
+        event->message = (char*)calloc(message_length + 1, sizeof(char));
+        if(event->message != NULL) {
+            memcpy(event->message, message, message_length);
+            event->message[message_length] = '\0';
         }
+    }
+
+    pthread_mutex_lock(&handle->event_lock);
+    if(handle->event_tail == NULL) {
+        handle->event_head = event;
+        handle->event_tail = event;
+    } else {
+        handle->event_tail->next = event;
+        handle->event_tail = event;
     }
     pthread_mutex_unlock(&handle->event_lock);
 }
@@ -1164,19 +1269,28 @@ int gdx_teavm_ws_glfw_poll_event(int64_t handle_value, int32_t* event_data, void
     event_data[3] = 0;
 
     pthread_mutex_lock(&handle->event_lock);
-    if(handle->event.type != WS_EVENT_NONE) {
-        event_data[0] = handle->event.type;
-        event_data[1] = handle->event.data0;
-        event_data[2] = handle->event.data1;
-        if(message_buffer != NULL && message_buffer_capacity > 0 && handle->event.message != NULL) {
-            teavm_ws_copy_string((char*)message_buffer, message_buffer_capacity, handle->event.message);
+    TeavmWsEvent* event = handle->event_head;
+    if(event != NULL) {
+        handle->event_head = event->next;
+        if(handle->event_head == NULL) {
+            handle->event_tail = NULL;
         }
-        teavm_ws_destroy_event(&handle->event);
-        pthread_mutex_unlock(&handle->event_lock);
-        return 1;
     }
     pthread_mutex_unlock(&handle->event_lock);
-    return 0;
+
+    if(event == NULL) {
+        return 0;
+    }
+
+    event_data[0] = event->type;
+    event_data[1] = event->data0;
+    event_data[2] = event->data1;
+    if(message_buffer != NULL && message_buffer_capacity > 0 && event->message != NULL) {
+        teavm_ws_copy_string((char*)message_buffer, message_buffer_capacity, event->message);
+    }
+    teavm_ws_destroy_event(event);
+    free(event);
+    return 1;
 }
 
 void gdx_teavm_ws_glfw_destroy(int64_t handle_value) {
@@ -1196,7 +1310,7 @@ void gdx_teavm_ws_glfw_destroy(int64_t handle_value) {
     }
 
     pthread_mutex_lock(&handle->event_lock);
-    teavm_ws_destroy_event(&handle->event);
+    teavm_ws_free_event_queue(handle);
     pthread_mutex_unlock(&handle->event_lock);
     pthread_mutex_destroy(&handle->event_lock);
     teavm_ws_clear_close_reason(handle);

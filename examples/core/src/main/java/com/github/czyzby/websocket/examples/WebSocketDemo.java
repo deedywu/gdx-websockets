@@ -110,40 +110,46 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
         lastMessage = "Waiting for server response";
         log("Connecting to " + endpoint);
 
-        socket = createSocket(endpoint);
-        configureSocket(socket);
-        socket.addListener(new WebSocketAdapter() {
-            @Override
-            public boolean onOpen(final WebSocket webSocket) {
-                status = "Open";
-                log("Connected");
-                onSocketOpen(webSocket);
-                sendMessage("Hello from gdx-websockets @ " + TimeUtils.millis());
-                return NOT_HANDLED;
-            }
+        try {
+            socket = createSocket(endpoint);
+            configureSocket(socket);
+            socket.addListener(new WebSocketAdapter() {
+                @Override
+                public boolean onOpen(final WebSocket webSocket) {
+                    status = "Open";
+                    log("Connected");
+                    onSocketOpen(webSocket);
+                    sendMessage("Hello from gdx-websockets @ " + TimeUtils.millis());
+                    return NOT_HANDLED;
+                }
 
-            @Override
-            public boolean onClose(final WebSocket webSocket, final int closeCode, final String reason) {
-                status = "Closed (" + closeCode + ")";
-                log("Closed: " + normalizeReason(reason));
-                return NOT_HANDLED;
-            }
+                @Override
+                public boolean onClose(final WebSocket webSocket, final int closeCode, final String reason) {
+                    status = "Closed (" + closeCode + ")";
+                    log("Closed: " + normalizeReason(reason));
+                    return NOT_HANDLED;
+                }
 
-            @Override
-            public boolean onMessage(final WebSocket webSocket, final String packet) {
-                lastMessage = packet;
-                log("Received: " + packet);
-                return NOT_HANDLED;
-            }
+                @Override
+                public boolean onMessage(final WebSocket webSocket, final String packet) {
+                    lastMessage = packet;
+                    log("Received: " + packet);
+                    return NOT_HANDLED;
+                }
 
-            @Override
-            public boolean onError(final WebSocket webSocket, final Throwable error) {
-                status = "Error";
-                log("Error: " + (error == null ? "unknown" : error.getMessage()));
-                return NOT_HANDLED;
-            }
-        });
-        socket.connect();
+                @Override
+                public boolean onError(final WebSocket webSocket, final Throwable error) {
+                    final String message = describeError(error);
+                    status = "Error";
+                    lastMessage = "Error: " + message;
+                    log("Error: " + message);
+                    return NOT_HANDLED;
+                }
+            });
+            socket.connect();
+        } catch (final Exception exception) {
+            handleConnectionFailure(exception);
+        }
     }
 
     private boolean sendMessage(final String message) {
@@ -160,9 +166,14 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
             log("Socket is not open yet");
             return false;
         }
-        socket.send(trimmed);
-        log("Sent: " + trimmed);
-        return true;
+        try {
+            socket.send(trimmed);
+            log("Sent: " + trimmed);
+            return true;
+        } catch (final Exception exception) {
+            log("Send failed: " + describeError(exception));
+            return false;
+        }
     }
 
     private void sendTypedMessage() {
@@ -207,6 +218,34 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
 
     private String normalizeReason(final String reason) {
         return reason == null || reason.isEmpty() ? "no reason" : reason;
+    }
+
+    private void handleConnectionFailure(final Throwable error) {
+        final String message = "Connection failed: " + describeError(error);
+        status = "Error";
+        lastMessage = message;
+        log(message);
+        closeSocket();
+    }
+
+    private static String describeError(final Throwable error) {
+        if (error == null) {
+            return "unknown error";
+        }
+        final String message = normalizeErrorMessage(error.getMessage());
+        final Throwable cause = error.getCause();
+        final String causeMessage = cause == null ? "" : normalizeErrorMessage(cause.getMessage());
+        if (message.length() == 0) {
+            return causeMessage.length() == 0 ? error.toString() : causeMessage;
+        }
+        if (causeMessage.length() > 0 && !causeMessage.equals(message)) {
+            return message + ": " + causeMessage;
+        }
+        return message;
+    }
+
+    private static String normalizeErrorMessage(final String message) {
+        return message == null ? "" : message.trim();
     }
 
     private void openEndpointSettings() {

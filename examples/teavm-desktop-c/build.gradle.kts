@@ -7,7 +7,6 @@ plugins {
 }
 
 val gdxVersion: String by rootProject.extra
-val wsVersion = rootProject.version.toString()
 
 extensions.configure<JavaPluginExtension> {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -22,7 +21,7 @@ dependencies {
     implementation("com.badlogicgames.gdx:gdx:$gdxVersion")
     implementation(project(":examples:core"))
     implementation("com.github.xpenatan.gdx-teavm:backend-glfw:-SNAPSHOT")
-    implementation("com.github.deedywu.gdx-websockets:teavm-desktop-c:$wsVersion")
+    implementation(project(":libraries:backends:teavm-desktop-c"))
 }
 
 val buildMainClass = "com.github.czyzby.websocket.examples.teavmdesktopc.BuildTeaVMDesktopCExample"

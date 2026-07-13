@@ -1,11 +1,10 @@
 # TeaVM C desktop websocket example
 
 This example ports the `gdx-teavm` desktop-c websocket sample into this repository.
-
-It consumes published artifacts only:
+It uses the local websocket backend project so backend changes can be tested directly.
+It still consumes the published `gdx-teavm` GLFW backend:
 
 - `com.github.xpenatan.gdx-teavm:backend-glfw:-SNAPSHOT`
-- `com.github.deedywu.gdx-websockets:teavm-desktop-c:2.0.4-rc2`
 
 ## Build and run
 
@@ -40,8 +39,8 @@ Release variants are also available:
 - The shared demo still comes from `:examples:core`.
 - The launcher opens a selector with `Normal WSS Echo` and `Local permessage-deflate` options.
 - The `Local permessage-deflate` option defaults to `ws://127.0.0.1:8787/`, which lets it talk to a local `:examples:server-demo-pmdeflate` server.
-- The local permessage-deflate demo requests `permessage-deflate`, but the current TeaVM desktop-c backend does not expose negotiated extension details.
-- This example uses the online `teavm-desktop-c` websocket artifact instead of the local backend module.
+- The local permessage-deflate demo exercises the same UI path, but the current TeaVM desktop-c backend does not implement the `permessage-deflate` websocket extension yet, so the local server reports `negotiated=none`.
+- This example uses the local `:libraries:backends:teavm-desktop-c` websocket backend module.
 - `backend-glfw` currently follows the `-SNAPSHOT` line in the same spirit as `teavm-android`.
 - The generated files are written under `examples/teavm-desktop-c/build/dist`.
 - A clean first build needs network access. Gradle downloads its wrapper distribution and dependencies, and the `libcurl` helper downloads the curl source archive if the local system `curl` does not already support both `ws` and `wss`.
