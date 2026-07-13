@@ -17,15 +17,14 @@ public class GwtLauncher extends GwtApplication {
     @Override
     public ApplicationListener createApplicationListener() {
         GwtWebSockets.initiate();
-
-        // Use the original shared demo for a normal wss endpoint test.
-        // return new WebSocketDemo();
-
-        // Use the permessage-deflate demo for local ws://127.0.0.1:8787/ testing.
         return createPerMessageDeflateDemo();
     }
 
     private static ApplicationListener createPerMessageDeflateDemo() {
+        // Use the original shared demo for a normal wss endpoint test.
+        // return new WebSocketDemo();
+
+        // Use the permessage-deflate demo for local ws://127.0.0.1:8787/ testing.
         return new PerMessageDeflateWebSocketDemo(PerMessageDeflateWebSocketDemo.DEFAULT_PMDEFLATE_ENDPOINT);
     }
 }

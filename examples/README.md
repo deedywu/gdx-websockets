@@ -10,7 +10,7 @@ This directory groups runnable samples for `gdx-websockets`.
 - `teavm-desktop-c`: TeaVM C / GLFW example using the `teavm-desktop-c` backend
 - `teavm-web`: TeaVM web example using the `teavm-web` backend
 - `gwt`: GWT example using the `html` backend
-- `android`: standard Android launcher using `common` when Android SDK is configured
+- `android`: standard Android launcher using `common` with the permessage-deflate demo when Android SDK is configured
 - `ios`: standard RoboVM MetalANGLE iOS launcher using `common` when running on macOS
 - `teavm-android`: TeaVM Android launcher using the `teavm-android` backend when Android SDK is configured
 - `teavm-ios`: TeaVM iOS launcher using the `teavm-ios` backend when running on macOS
@@ -29,7 +29,9 @@ Local permessage-deflate server:
 ./gradlew :examples:server-demo-pmdeflate:run
 ```
 
-The desktop and GWT launchers default to `ws://127.0.0.1:8787/` for local `permessage-deflate` testing, and the demo UI can change the address at runtime.
+The desktop and GWT launchers default to `ws://127.0.0.1:8787/` for local `permessage-deflate` testing.
+The Android launcher uses the placeholder `ws://host-machine-ip:8787/` for the same local server.
+Replace `host-machine-ip` with your host machine LAN IP, or use the demo UI to switch to another reachable endpoint.
 Type text, press `Enter` to send, `F2` to edit connection settings, `F5` to reconnect, and `Esc` to clear the input buffer.
 
 TeaVM desktop-c build:
