@@ -16,8 +16,6 @@ import com.badlogic.gdx.utils.ScreenUtils;
 /** Shared entry screen that lets users choose which websocket demo to run. */
 public class WebSocketDemoSelector extends ApplicationAdapter implements InputProcessor {
     private static final int OPTION_NONE = -1;
-    private static final int DEFAULT_WIDTH = 800;
-    private static final int DEFAULT_HEIGHT = 480;
 
     private final Array<DemoOption> options = new Array<DemoOption>();
     private final Array<Rectangle> optionBounds = new Array<Rectangle>();
@@ -27,8 +25,8 @@ public class WebSocketDemoSelector extends ApplicationAdapter implements InputPr
     private BitmapFont font;
     private ShapeRenderer shapeRenderer;
     private ApplicationListener activeDemo;
-    private int width = DEFAULT_WIDTH;
-    private int height = DEFAULT_HEIGHT;
+    private int width = DemoUiScale.BASE_WIDTH;
+    private int height = DemoUiScale.BASE_HEIGHT;
     private float uiScale = 1f;
     private int hoveredOption = OPTION_NONE;
     private int pressedOption = OPTION_NONE;
@@ -121,7 +119,7 @@ public class WebSocketDemoSelector extends ApplicationAdapter implements InputPr
         this.width = Math.max(1, width);
         this.height = Math.max(1, height);
         if (font != null) {
-            uiScale = Math.max(1f, Math.min(this.width / 800f, this.height / 480f));
+            uiScale = DemoUiScale.calculate(this.width, this.height);
             font.getData().setScale(uiScale);
         }
         layoutOptions();

@@ -74,6 +74,10 @@ IPA output is written under `examples/teavm-ios/build/distributions`.
 - Shared demo code still comes from `:examples:core`.
 - The TeaVM iOS main class is `WebSocketsIOSLauncher`.
 - The launcher initializes `IOSWebSockets` before creating the `IOSApplication`.
+- The launcher opens a selector with `Normal WSS Echo` and `Local permessage-deflate` options.
+- The `Local permessage-deflate` option defaults to `ws://127.0.0.1:8787/` for simulator testing against `:examples:server-demo-pmdeflate`.
+- For a real device, change the endpoint in `Settings` to your host machine LAN IP or another reachable websocket endpoint.
+- The local permessage-deflate demo exercises the same UI path, but the current TeaVM iOS backend uses `NSURLSessionWebSocketTask` without extension negotiation controls, so negotiated extensions remain unavailable for this backend.
 - This variant uses on-screen touch buttons, matching the mobile TeaVM Android example.
 - The default graphics API is `angle`, which downloads the pinned MetalANGLEKit framework bundle. Set Gradle property `gdx.teavm.ios.graphicsApi=gles` to use the older OpenGL ES / GLKit template.
 - This module includes compatibility resources and a generated CMake patch for the current `backend-ios:-SNAPSHOT` line.

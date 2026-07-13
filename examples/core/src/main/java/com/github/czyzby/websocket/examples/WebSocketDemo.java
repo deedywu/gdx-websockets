@@ -22,6 +22,8 @@ import com.github.czyzby.websocket.WebSockets;
 public class WebSocketDemo extends ApplicationAdapter implements InputProcessor {
     public static final String DEFAULT_URL = "wss://ws.postman-echo.com/raw";
 
+    private static final int DEFAULT_WIDTH = DemoUiScale.BASE_WIDTH;
+    private static final int DEFAULT_HEIGHT = DemoUiScale.BASE_HEIGHT;
     private static final int MAX_LOG_LINES = 10;
     private static final int MAX_INPUT_LENGTH = 120;
     private static final int MAX_ENDPOINT_LENGTH = 200;
@@ -63,8 +65,8 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
     private String lastMessage = "No messages yet";
     private String helperText;
     private BackHandler backHandler;
-    private int width = 800;
-    private int height = 480;
+    private int width = DEFAULT_WIDTH;
+    private int height = DEFAULT_HEIGHT;
     private float uiScale = 1f;
     private float bottomUiReservedHeight;
     private int hoveredButton = BUTTON_NONE;
@@ -358,7 +360,7 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
         this.width = Math.max(1, width);
         this.height = Math.max(1, height);
         if (font != null) {
-            uiScale = Math.max(1f, Math.min(this.width / 800f, this.height / 480f));
+            uiScale = DemoUiScale.calculate(this.width, this.height);
             font.getData().setScale(uiScale);
         }
         if (touchControlsEnabled) {

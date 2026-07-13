@@ -108,4 +108,7 @@ The same values can be passed directly to RoboVM:
 
 - This example reuses `:examples:core`.
 - It initializes `CommonWebSockets` and uses the normal RoboVM MetalANGLE `IOSApplication` launcher.
-- It keeps the default websocket endpoint from the shared demo: `wss://ws.postman-echo.com/raw`.
+- The launcher opens a selector with `Normal WSS Echo` and `Local permessage-deflate` options.
+- The `Local permessage-deflate` option defaults to `ws://127.0.0.1:8787/` for simulator testing against `:examples:server-demo-pmdeflate`.
+- For a real device, change the endpoint in `Settings` to your host machine LAN IP or another reachable websocket endpoint.
+- The local permessage-deflate demo requests `permessage-deflate` and logs whether the server actually negotiated it.
