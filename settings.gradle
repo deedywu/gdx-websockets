@@ -35,6 +35,7 @@ def hasAndroidSdk = isAndroidSdkDir(System.getenv('ANDROID_HOME')) ||
         isAndroidSdkDir(System.getenv('ANDROID_SDK_ROOT')) ||
         isAndroidSdkDir(localProperties.getProperty('sdk.dir'))
 def isMacOs = System.getProperty('os.name').toLowerCase().contains('mac')
+def isJitPack = System.getenv('JITPACK')?.toBoolean() ?: false
 
 include ':libraries:core'
 include ':libraries:backends:common'
@@ -44,22 +45,27 @@ include ':libraries:backends:teavm-desktop-c'
 include ':libraries:backends:teavm-android'
 include ':libraries:backends:teavm-ios'
 include ':libraries:extensions:serialization'
-include ':examples:core'
-include ':examples:desktop'
-include ':examples:gwt'
-include ':examples:teavm-desktop-c'
-include ':examples:teavm-web'
 
-if (hasAndroidSdk) {
-    include ':examples:android'
-    include ':examples:teavm-android'
+if (isJitPack) {
+    logger.lifecycle('JitPack environment detected. Skipping :examples modules because only published libraries are required.')
 } else {
-    logger.lifecycle('Android SDK not found. Skipping :examples:android and :examples:teavm-android. Set ANDROID_HOME, ANDROID_SDK_ROOT, or local.properties sdk.dir to enable them.')
-}
+    include ':examples:core'
+    include ':examples:desktop'
+    include ':examples:gwt'
+    include ':examples:teavm-desktop-c'
+    include ':examples:teavm-web'
 
-if (isMacOs) {
-    include ':examples:ios'
-    include ':examples:teavm-ios'
-} else {
-    logger.lifecycle('macOS not detected. Skipping :examples:ios and :examples:teavm-ios because iOS builds require the Apple toolchain.')
+    if (hasAndroidSdk) {
+        include ':examples:android'
+        include ':examples:teavm-android'
+    } else {
+        logger.lifecycle('Android SDK not found. Skipping :examples:android and :examples:teavm-android. Set ANDROID_HOME, ANDROID_SDK_ROOT, or local.properties sdk.dir to enable them.')
+    }
+
+    if (isMacOs) {
+        include ':examples:ios'
+        include ':examples:teavm-ios'
+    } else {
+        logger.lifecycle('macOS not detected. Skipping :examples:ios and :examples:teavm-ios because iOS builds require the Apple toolchain.')
+    }
 }

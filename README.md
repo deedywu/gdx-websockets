@@ -104,7 +104,7 @@ dependencies {
 
 Specify the `wsVersion` in the `gradle.properties` file in the root directory. Use a tag, branch snapshot, or commit published from this fork:
 
-`wsVersion=2.0.4-rc1`
+`wsVersion=2.0.4-rc2`
 
 `wsVersion=master-SNAPSHOT`
 

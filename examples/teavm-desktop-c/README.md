@@ -5,7 +5,7 @@ This example ports the `gdx-teavm` desktop-c websocket sample into this reposito
 It consumes published artifacts only:
 
 - `com.github.xpenatan.gdx-teavm:backend-glfw:-SNAPSHOT`
-- `com.github.deedywu.gdx-websockets:teavm-desktop-c:2.0.4-rc1`
+- `com.github.deedywu.gdx-websockets:teavm-desktop-c:2.0.4-rc2`
 
 ## Build and run
 
