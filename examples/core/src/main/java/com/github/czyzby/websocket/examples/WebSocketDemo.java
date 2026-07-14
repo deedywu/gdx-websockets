@@ -118,6 +118,9 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
             socket.addListener(new WebSocketAdapter() {
                 @Override
                 public boolean onOpen(final WebSocket webSocket) {
+                    if (!isCurrentSocket(webSocket)) {
+                        return NOT_HANDLED;
+                    }
                     status = "Open";
                     log("Connected");
                     onSocketOpen(webSocket);
@@ -127,6 +130,9 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
 
                 @Override
                 public boolean onClose(final WebSocket webSocket, final int closeCode, final String reason) {
+                    if (!isCurrentSocket(webSocket)) {
+                        return NOT_HANDLED;
+                    }
                     status = "Closed (" + closeCode + ")";
                     log("Closed: " + normalizeReason(reason));
                     return NOT_HANDLED;
@@ -134,6 +140,9 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
 
                 @Override
                 public boolean onMessage(final WebSocket webSocket, final String packet) {
+                    if (!isCurrentSocket(webSocket)) {
+                        return NOT_HANDLED;
+                    }
                     lastMessage = packet;
                     log("Received: " + packet);
                     return NOT_HANDLED;
@@ -141,6 +150,9 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
 
                 @Override
                 public boolean onError(final WebSocket webSocket, final Throwable error) {
+                    if (!isCurrentSocket(webSocket)) {
+                        return NOT_HANDLED;
+                    }
                     final String message = describeError(error);
                     status = "Error";
                     lastMessage = "Error: " + message;
@@ -152,6 +164,10 @@ public class WebSocketDemo extends ApplicationAdapter implements InputProcessor 
         } catch (final Exception exception) {
             handleConnectionFailure(exception);
         }
+    }
+
+    private boolean isCurrentSocket(final WebSocket webSocket) {
+        return webSocket == socket;
     }
 
     private boolean sendMessage(final String message) {
