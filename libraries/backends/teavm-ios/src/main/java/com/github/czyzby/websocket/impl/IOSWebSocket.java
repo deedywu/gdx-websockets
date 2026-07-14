@@ -35,10 +35,16 @@ public class IOSWebSocket extends AbstractWebSocket {
     private static final Array<IOSWebSocket> SOCKETS = new Array<>();
     private static boolean pumpRegistered;
 
+    private final boolean insecureTls;
     private long nativeHandle;
 
     public IOSWebSocket(String url) {
+        this(url, false);
+    }
+
+    public IOSWebSocket(String url, boolean insecureTls) {
         super(url);
+        this.insecureTls = insecureTls;
         ensurePumpRegistered();
     }
 
@@ -47,7 +53,7 @@ public class IOSWebSocket extends AbstractWebSocket {
         if(nativeHandle != 0 && getState() != WebSocketState.CLOSED) {
             close(WebSockets.ABNORMAL_AUTOMATIC_CLOSE_CODE, "reconnect");
         }
-        long handle = createSocket(getUrl());
+        long handle = createSocket(getUrl(), insecureTls);
         if(handle == 0) {
             throw new WebSocketException(readReasonBuffer());
         }
@@ -192,7 +198,7 @@ public class IOSWebSocket extends AbstractWebSocket {
     private static native boolean isNativeSupported();
 
     @Import(name = "gdx_teavm_ws_ios_create")
-    private static native long createSocket(String url);
+    private static native long createSocket(String url, boolean insecureTls);
 
     @Import(name = "gdx_teavm_ws_ios_state")
     private static native int socketState(long handle);

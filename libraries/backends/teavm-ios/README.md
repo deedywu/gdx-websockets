@@ -37,6 +37,20 @@ public static void main(String[] args) {
 }
 ```
 
+## Local WSS testing
+
+For local development only, `WebSockets.newInsecureSocket(url)` creates a `wss://` socket that trusts every TLS
+certificate and disables hostname verification after `IOSWebSockets.initiate()` has registered this backend. This is
+useful for simulator or device tests against a local server with a self-signed certificate:
+
+```java
+WebSocket socket = WebSockets.newInsecureSocket("wss://127.0.0.1:8787/");
+```
+
+Do not use this helper for production traffic. On TeaVM iOS, the helper accepts `NSURLAuthenticationMethodServerTrust`
+challenges for that socket only; normal `WebSockets.newSocket(url)` connections continue to use the default iOS trust
+policy.
+
 ## Current limits
 
 - text websocket frames are supported

@@ -70,6 +70,26 @@ public class WebSocketDemoSelector extends ApplicationAdapter implements InputPr
                 localPerMessageDeflate(localPerMessageDeflateEndpoint, localPerMessageDeflateFactory));
     }
 
+    public static WebSocketDemoSelector createDefaultSelectorWithLocalWss(
+            final DemoFactory localPerMessageDeflateFactory,
+            final DemoFactory localSecurePerMessageDeflateFactory) {
+        return createDefaultSelectorWithLocalWss(normalWssEchoFactory(true),
+                PerMessageDeflateWebSocketDemo.DEFAULT_PMDEFLATE_ENDPOINT, localPerMessageDeflateFactory,
+                PerMessageDeflateWebSocketDemo.DEFAULT_SECURE_PMDEFLATE_ENDPOINT,
+                localSecurePerMessageDeflateFactory);
+    }
+
+    public static WebSocketDemoSelector createDefaultSelectorWithLocalWss(final DemoFactory normalWssEchoFactory,
+            final String localPerMessageDeflateEndpoint, final DemoFactory localPerMessageDeflateFactory,
+            final String localSecurePerMessageDeflateEndpoint,
+            final DemoFactory localSecurePerMessageDeflateFactory) {
+        return new WebSocketDemoSelector(
+                normalWssEcho(normalWssEchoFactory),
+                localPerMessageDeflate(localPerMessageDeflateEndpoint, localPerMessageDeflateFactory),
+                localSecurePerMessageDeflate(localSecurePerMessageDeflateEndpoint,
+                        localSecurePerMessageDeflateFactory));
+    }
+
     public static DemoFactory normalWssEchoFactory(final boolean touchControlsEnabled) {
         return new DemoFactory() {
             @Override
@@ -98,6 +118,10 @@ public class WebSocketDemoSelector extends ApplicationAdapter implements InputPr
 
     public static DemoOption localPerMessageDeflate(final String endpoint, final DemoFactory factory) {
         return new DemoOption("Local permessage-deflate", endpoint, factory);
+    }
+
+    public static DemoOption localSecurePerMessageDeflate(final String endpoint, final DemoFactory factory) {
+        return new DemoOption("Local WSS permessage-deflate", endpoint, factory);
     }
 
     @Override

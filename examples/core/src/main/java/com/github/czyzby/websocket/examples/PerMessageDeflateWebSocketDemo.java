@@ -5,6 +5,7 @@ import com.github.czyzby.websocket.WebSocket;
 /** Shared websocket demo that requests {@code permessage-deflate} and logs the negotiated result when available. */
 public class PerMessageDeflateWebSocketDemo extends WebSocketDemo {
     public static final String DEFAULT_PMDEFLATE_ENDPOINT = "ws://127.0.0.1:8787/";
+    public static final String DEFAULT_SECURE_PMDEFLATE_ENDPOINT = "wss://127.0.0.1:8787/";
 
     public PerMessageDeflateWebSocketDemo() {
         super(DEFAULT_PMDEFLATE_ENDPOINT);

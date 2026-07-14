@@ -321,7 +321,7 @@ static int teavm_ws_ensure_bridge(JNIEnv* env) {
         return 0;
     }
 
-    g_create_socket_method = (*env)->GetStaticMethodID(env, g_bridge_class, "createSocket", "(JLjava/lang/String;Z)Z");
+    g_create_socket_method = (*env)->GetStaticMethodID(env, g_bridge_class, "createSocket", "(JLjava/lang/String;ZZ)Z");
     g_send_text_method = (*env)->GetStaticMethodID(env, g_bridge_class, "sendText", "(JLjava/lang/String;)Z");
     g_is_permessage_deflate_agreed_method = (*env)->GetStaticMethodID(env, g_bridge_class,
             "isPerMessageDeflateAgreed", "(J)Z");
@@ -391,7 +391,7 @@ int gdx_teavm_ws_android_supported(void) {
     return supported;
 }
 
-int64_t gdx_teavm_ws_android_create(const char* url, int use_per_message_deflate) {
+int64_t gdx_teavm_ws_android_create(const char* url, int use_per_message_deflate, int insecure_tls) {
     teavm_ws_set_error(NULL);
     if(url == NULL || url[0] == '\0') {
         teavm_ws_set_error("A websocket URL is required.");
@@ -422,7 +422,7 @@ int64_t gdx_teavm_ws_android_create(const char* url, int use_per_message_deflate
 
     jstring url_value = (*env)->NewStringUTF(env, url);
     jboolean created = (*env)->CallStaticBooleanMethod(env, g_bridge_class, g_create_socket_method, (jlong)handle->id,
-            url_value, (jboolean)(use_per_message_deflate != 0));
+            url_value, (jboolean)(use_per_message_deflate != 0), (jboolean)(insecure_tls != 0));
     if(url_value != NULL) {
         (*env)->DeleteLocalRef(env, url_value);
     }

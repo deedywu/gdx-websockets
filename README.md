@@ -104,7 +104,7 @@ dependencies {
 
 Specify the `wsVersion` in the `gradle.properties` file in the root directory. Use a tag, branch snapshot, or commit published from this fork:
 
-`wsVersion=2.0.4`
+`wsVersion=2.0.5`
 
 `wsVersion=master-SNAPSHOT`
 
@@ -176,6 +176,8 @@ Package the generated TeaVM iOS app as an IPA:
 ```
 
 The demo uses the interactive `gdx-teavm` websocket UI flow and connects to `wss://ws.postman-echo.com/raw` by default.
+The desktop, Android, RoboVM iOS, TeaVM Android, TeaVM iOS, and TeaVM desktop-c examples also include a local `wss://`
+permessage-deflate option for testing the Netty demo server with a generated self-signed certificate.
 
 ## Basic usage
 
@@ -249,7 +251,29 @@ In TeaVM iOS launchers, make sure to call `IOSWebSockets.initiate()` before crea
 `setPerMessageDeflate(true)` is a core API flag. Backends that can control websocket extension negotiation request
 `permessage-deflate` during the handshake; other backends may ignore the flag.
 
+### Local WSS testing
+
+For local development only, `WebSockets.newInsecureSocket(url)` requests a socket that trusts every TLS certificate and
+disables hostname verification. This is useful for local `wss://` testing with a self-signed certificate, local IP
+address, or temporary hostname mismatch:
+
+```
+        WebSocket socket = WebSockets.newInsecureSocket("wss://192.168.2.1:8080/");
+```
+
+Do not use this helper for production traffic. Backends that cannot override TLS validation, such as browser-backed
+websocket implementations, reject this helper with a `WebSocketException`. The common JVM backend, TeaVM Android
+backend, TeaVM iOS backend, and TeaVM desktop-c backend support it.
+
 ## Changes
+
+### 2.0.5
+
+- Added local-development WSS testing with `WebSockets.newInsecureSocket(url)` on common JVM, TeaVM Android, TeaVM iOS, and TeaVM desktop-c.
+- Added `NvWebSocket.setSSLContext(...)` for custom JVM TLS trust setup.
+- Added local WSS demo options and self-signed certificate generation in the example server.
+- Made browser-backed GWT/html and TeaVM web report clear errors for unsupported insecure WSS testing.
+- Fixed stale demo status after reconnecting.
 
 ### 2.0.4
 

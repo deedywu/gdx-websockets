@@ -22,13 +22,23 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
+import io.netty.handler.ssl.OptionalSslHandler;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.util.AttributeKey;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 /** Small Netty websocket echo server that enables per-message deflate negotiation. */
 public class PerMessageDeflateNettyServer {
     private static final String DEFAULT_HOST = "127.0.0.1";
     private static final int DEFAULT_PORT = 8787;
     private static final String DEFAULT_PATH = "/";
+    private static final String DEFAULT_CERTIFICATE_PATH = "build/cert/server-demo-pmdeflate.crt";
+    private static final String DEFAULT_PRIVATE_KEY_PATH = "build/cert/server-demo-pmdeflate.key";
 
     private static final AttributeKey<String> REQUESTED_EXTENSIONS =
             AttributeKey.valueOf("gdx.websocket.requestedExtensions");
@@ -44,6 +54,11 @@ public class PerMessageDeflateNettyServer {
         final int port = args.length > 1 && args[1] != null && !args[1].trim().isEmpty()
                 ? Integer.parseInt(args[1].trim()) : DEFAULT_PORT;
         final String websocketPath = normalizePath(args.length > 2 ? args[2] : DEFAULT_PATH);
+        final File certificateFile = new File(args.length > 3 && args[3] != null && !args[3].trim().isEmpty()
+                ? args[3].trim() : DEFAULT_CERTIFICATE_PATH);
+        final File privateKeyFile = new File(args.length > 4 && args[4] != null && !args[4].trim().isEmpty()
+                ? args[4].trim() : DEFAULT_PRIVATE_KEY_PATH);
+        final SslContext sslContext = loadOrCreateSslContext(certificateFile, privateKeyFile);
 
         final EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         final EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -52,7 +67,7 @@ public class PerMessageDeflateNettyServer {
             final ServerBootstrap bootstrap = new ServerBootstrap();
             bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new ServerInitializer(websocketPath));
+                    .childHandler(new ServerInitializer(websocketPath, sslContext));
 
             final ChannelFuture future = bootstrap.bind(host, port).sync();
             final Channel channel = future.channel();
@@ -64,7 +79,8 @@ public class PerMessageDeflateNettyServer {
             }));
 
             System.out.println("Netty permessage-deflate websocket server listening on ws://" + host + ":" + port
-                    + websocketPath);
+                    + websocketPath + " and wss://" + host + ":" + port + websocketPath);
+            System.out.println("Local WSS certificate: " + certificateFile.getAbsolutePath());
             channel.closeFuture().sync();
         } finally {
             bossGroup.shutdownGracefully().syncUninterruptibly();
@@ -80,20 +96,55 @@ public class PerMessageDeflateNettyServer {
         return trimmed.startsWith("/") ? trimmed : "/" + trimmed;
     }
 
+    private static SslContext loadOrCreateSslContext(final File certificateFile, final File privateKeyFile)
+            throws Exception {
+        if (!certificateFile.isFile() || !privateKeyFile.isFile()) {
+            generateSelfSignedCertificate(certificateFile, privateKeyFile);
+        }
+        return SslContextBuilder.forServer(certificateFile, privateKeyFile).build();
+    }
+
+    private static void generateSelfSignedCertificate(final File certificateFile, final File privateKeyFile)
+            throws Exception {
+        ensureParentDirectory(certificateFile);
+        ensureParentDirectory(privateKeyFile);
+
+        final SelfSignedCertificate certificate = SelfSignedCertificate.builder()
+                .fqdn("localhost")
+                .build();
+        try {
+            Files.copy(certificate.certificate().toPath(), certificateFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(certificate.privateKey().toPath(), privateKeyFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            System.out.println("Generated local self-signed WSS certificate.");
+        } finally {
+            certificate.delete();
+        }
+    }
+
+    private static void ensureParentDirectory(final File file) {
+        final File parent = file.getAbsoluteFile().getParentFile();
+        if (parent != null && !parent.isDirectory() && !parent.mkdirs() && !parent.isDirectory()) {
+            throw new IllegalStateException("Unable to create directory: " + parent);
+        }
+    }
+
     private static String normalizeExtensions(final String value) {
         return value == null || value.trim().isEmpty() ? "none" : value.trim();
     }
 
     private static final class ServerInitializer extends ChannelInitializer<SocketChannel> {
         private final String websocketPath;
+        private final SslContext sslContext;
 
-        private ServerInitializer(final String websocketPath) {
+        private ServerInitializer(final String websocketPath, final SslContext sslContext) {
             this.websocketPath = websocketPath;
+            this.sslContext = sslContext;
         }
 
         @Override
         protected void initChannel(final SocketChannel channel) {
             channel.pipeline()
+                    .addLast(new OptionalSslHandler(sslContext))
                     .addLast(new HttpServerCodec())
                     .addLast(new HttpObjectAggregator(65536))
                     .addLast(new RequestedExtensionsCaptureHandler())

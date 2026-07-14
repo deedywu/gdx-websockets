@@ -8,6 +8,7 @@ import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketExtension;
 import com.neovisionaries.ws.client.WebSocketFactory;
 
+import javax.net.ssl.SSLContext;
 import java.net.SocketException;
 import java.util.List;
 
@@ -17,6 +18,7 @@ import java.util.List;
 public class NvWebSocket extends AbstractWebSocket {
     private final WebSocketFactory webSocketFactory = new WebSocketFactory();
     private WebSocket webSocket;
+    private SSLContext sslContext;
 
     public NvWebSocket(final String url) {
         super(url);
@@ -27,6 +29,8 @@ public class NvWebSocket extends AbstractWebSocket {
     public void connect() throws WebSocketException {
         try {
             dispose();
+            webSocketFactory.setVerifyHostname(verifyHostname);
+            webSocketFactory.setSSLContext(sslContext);
             final WebSocket currentWebSocket = webSocket = webSocketFactory.createSocket(getUrl());
             if (usePerMessageDeflate) {
                 currentWebSocket.addExtension(WebSocketExtension.PERMESSAGE_DEFLATE);
@@ -36,6 +40,15 @@ public class NvWebSocket extends AbstractWebSocket {
         } catch (final Throwable exception) {
             throw new WebSocketException("Unable to connect.", exception);
         }
+    }
+
+    /** Sets a custom SSL context for {@code wss://} connections.
+     *
+     * <p>This is useful when an application wants to provide its own trust store, certificate pinning, or a local
+     * development trust policy. Call this before {@link #connect()}. Passing {@code null} restores the default SSL
+     * context used by nv-websocket-client.</p> */
+    public void setSSLContext(final SSLContext sslContext) {
+        this.sslContext = sslContext;
     }
 
     @Override

@@ -9,9 +9,15 @@ import com.neovisionaries.ws.client.WebSocketFrame;
 import com.neovisionaries.ws.client.WebSocketState;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 public class WebSocketsAndroidBridge {
     private static final int STATE_CONNECTING = 0;
@@ -22,6 +28,10 @@ public class WebSocketsAndroidBridge {
     private static final int NORMAL_CLOSE = 1000;
 
     private static final WebSocketFactory FACTORY = new WebSocketFactory().setConnectionTimeout(10000);
+    private static final WebSocketFactory INSECURE_FACTORY = new WebSocketFactory()
+            .setConnectionTimeout(10000)
+            .setVerifyHostname(false)
+            .setSSLContext(newTrustAllSSLContext());
     private static final ConcurrentHashMap<Long, WebSocket> SOCKETS = new ConcurrentHashMap<>();
 
     private static volatile String lastError = "";
@@ -29,14 +39,14 @@ public class WebSocketsAndroidBridge {
     private WebSocketsAndroidBridge() {
     }
 
-    public static boolean createSocket(long handle, String url, boolean usePerMessageDeflate) {
+    public static boolean createSocket(long handle, String url, boolean usePerMessageDeflate, boolean insecureTls) {
         lastError = "";
         if(url == null || url.trim().isEmpty()) {
             lastError = "A websocket URL is required.";
             return false;
         }
         try {
-            WebSocket socket = FACTORY.createSocket(url.trim());
+            WebSocket socket = (insecureTls ? INSECURE_FACTORY : FACTORY).createSocket(url.trim());
             if(usePerMessageDeflate) {
                 socket.addExtension(WebSocketExtension.PERMESSAGE_DEFLATE);
             }
@@ -54,6 +64,30 @@ public class WebSocketsAndroidBridge {
         } catch(RuntimeException e) {
             lastError = describeThrowable(e);
             return false;
+        }
+    }
+
+    private static SSLContext newTrustAllSSLContext() {
+        try {
+            TrustManager[] trustAllCertificates = new TrustManager[] { new X509TrustManager() {
+                @Override
+                public X509Certificate[] getAcceptedIssuers() {
+                    return new X509Certificate[0];
+                }
+
+                @Override
+                public void checkClientTrusted(X509Certificate[] certificates, String authType) {
+                }
+
+                @Override
+                public void checkServerTrusted(X509Certificate[] certificates, String authType) {
+                }
+            } };
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, trustAllCertificates, new SecureRandom());
+            return sslContext;
+        } catch(GeneralSecurityException e) {
+            throw new IllegalStateException("Unable to create insecure SSL context.", e);
         }
     }
 
