@@ -104,7 +104,7 @@ dependencies {
 
 Specify the `wsVersion` in the `gradle.properties` file in the root directory. Use a tag, branch snapshot, or commit published from this fork:
 
-`wsVersion=2.0.4`
+`wsVersion=2.0.5`
 
 `wsVersion=master-SNAPSHOT`
 
@@ -267,11 +267,19 @@ backend, TeaVM iOS backend, and TeaVM desktop-c backend support it.
 
 ## Changes
 
+### 2.0.5
+
+- Added local-development WSS testing with `WebSockets.newInsecureSocket(url)` on common JVM, TeaVM Android, TeaVM iOS, and TeaVM desktop-c.
+- Added `NvWebSocket.setSSLContext(...)` for custom JVM TLS trust setup.
+- Added local WSS demo options and self-signed certificate generation in the example server.
+- Made browser-backed GWT/html and TeaVM web report clear errors for unsupported insecure WSS testing.
+- Fixed stale demo status after reconnecting.
+
 ### 2.0.4
 
 - Added core API support for requesting `permessage-deflate` before connecting, with backend support where websocket extension negotiation is exposed.
 - Unified the websocket examples across desktop, GWT, Android, iOS, and TeaVM targets with a shared demo selector, consistent launcher behavior, and matching mobile UI scaling.
-- Added a local Netty `permessage-deflate` test server plus example flows for local websocket/WSS testing and extension negotiation reporting where supported.
+- Added a local Netty `permessage-deflate` test server plus example flows for local websocket testing and extension negotiation reporting where supported.
 
 ### 2.0.3
 
