@@ -33,6 +33,19 @@ public static void main(String[] args) {
 
 Windows uses WinHTTP. Linux and macOS use `libcurl` loaded at runtime; make sure a `libcurl` build with `ws` and `wss` support is available on those platforms.
 
+## Local WSS testing
+
+For local development only, `WebSockets.newInsecureSocket(url)` creates a `wss://` socket that trusts every TLS
+certificate and disables hostname verification. This is useful for local test servers with a self-signed certificate,
+local IP address, or temporary hostname mismatch:
+
+```java
+WebSocket socket = WebSockets.newInsecureSocket("wss://127.0.0.1:8787/");
+```
+
+Do not use this helper for production traffic. On TeaVM desktop-c, the helper disables WinHTTP certificate checks on
+Windows and libcurl peer/host verification on Linux and macOS.
+
 ## Linux and macOS `libcurl`
 
 Some Linux and macOS `libcurl` builds expose the WebSocket API symbols but do not enable the `ws` and `wss` protocols. In that case connecting to a `wss://` endpoint can fail with a protocol-not-supported error.

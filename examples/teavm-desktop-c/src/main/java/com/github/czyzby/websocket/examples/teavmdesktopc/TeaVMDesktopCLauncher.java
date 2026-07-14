@@ -1,6 +1,9 @@
 package com.github.czyzby.websocket.examples.teavmdesktopc;
 
+import com.badlogic.gdx.ApplicationListener;
 import com.github.czyzby.websocket.GLFWWebSockets;
+import com.github.czyzby.websocket.examples.InsecurePerMessageDeflateWebSocketDemo;
+import com.github.czyzby.websocket.examples.PerMessageDeflateWebSocketDemo;
 import com.github.czyzby.websocket.examples.WebSocketDemoSelector;
 import com.github.xpenatan.gdx.teavm.backends.glfw.GLFWApplication;
 import com.github.xpenatan.gdx.teavm.backends.glfw.GLFWApplicationConfiguration;
@@ -19,6 +22,24 @@ public class TeaVMDesktopCLauncher {
         config.useVsync(true);
         config.setForegroundFPS(60);
 
-        new GLFWApplication(WebSocketDemoSelector.createDefaultSelector(), config);
+        new GLFWApplication(createDemoSelector(), config);
+    }
+
+    private static ApplicationListener createDemoSelector() {
+        return WebSocketDemoSelector.createDefaultSelectorWithLocalWss(
+                new WebSocketDemoSelector.DemoFactory() {
+                    @Override
+                    public ApplicationListener create() {
+                        return new PerMessageDeflateWebSocketDemo(
+                                PerMessageDeflateWebSocketDemo.DEFAULT_PMDEFLATE_ENDPOINT, true);
+                    }
+                },
+                new WebSocketDemoSelector.DemoFactory() {
+                    @Override
+                    public ApplicationListener create() {
+                        return new InsecurePerMessageDeflateWebSocketDemo(
+                                PerMessageDeflateWebSocketDemo.DEFAULT_SECURE_PMDEFLATE_ENDPOINT, true);
+                    }
+                });
     }
 }

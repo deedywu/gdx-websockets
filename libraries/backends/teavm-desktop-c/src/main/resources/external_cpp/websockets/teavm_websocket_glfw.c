@@ -372,7 +372,7 @@ int gdx_teavm_ws_glfw_supported(void) {
     return 1;
 }
 
-int64_t gdx_teavm_ws_glfw_create(const char* url) {
+int64_t gdx_teavm_ws_glfw_create(const char* url, int insecure_tls) {
     teavm_ws_set_error(NULL);
     TeavmWsHandle* handle = (TeavmWsHandle*)calloc(1, sizeof(TeavmWsHandle));
     if(handle == NULL) {
@@ -413,6 +413,19 @@ int64_t gdx_teavm_ws_glfw_create(const char* url) {
         teavm_ws_set_last_windows_error("WinHTTP request creation failed.");
         gdx_teavm_ws_glfw_destroy((int64_t)(intptr_t)handle);
         return 0;
+    }
+
+    if(handle->secure && insecure_tls) {
+        DWORD security_flags = SECURITY_FLAG_IGNORE_UNKNOWN_CA
+                | SECURITY_FLAG_IGNORE_CERT_CN_INVALID
+                | SECURITY_FLAG_IGNORE_CERT_DATE_INVALID
+                | SECURITY_FLAG_IGNORE_CERT_WRONG_USAGE;
+        if(!WinHttpSetOption(handle->request, WINHTTP_OPTION_SECURITY_FLAGS,
+                &security_flags, sizeof(security_flags))) {
+            teavm_ws_set_last_windows_error("Failed to disable WinHTTP certificate validation.");
+            gdx_teavm_ws_glfw_destroy((int64_t)(intptr_t)handle);
+            return 0;
+        }
     }
 
     if(!WinHttpSetOption(handle->request, WINHTTP_OPTION_UPGRADE_TO_WEB_SOCKET, NULL, 0)) {
@@ -641,6 +654,8 @@ struct curl_ws_frame {
 #define CURLOPT_URL (CURLOPTTYPE_STRINGPOINT + 2)
 #define CURLOPT_ERRORBUFFER (CURLOPTTYPE_OBJECTPOINT + 10)
 #define CURLOPT_USERAGENT (CURLOPTTYPE_STRINGPOINT + 18)
+#define CURLOPT_SSL_VERIFYPEER (CURLOPTTYPE_LONG + 64)
+#define CURLOPT_SSL_VERIFYHOST (CURLOPTTYPE_LONG + 81)
 #define CURLOPT_CONNECT_ONLY (CURLOPTTYPE_LONG + 141)
 #define CURLOPT_TIMEOUT_MS (CURLOPTTYPE_LONG + 155)
 
@@ -1105,7 +1120,7 @@ int gdx_teavm_ws_glfw_supported(void) {
     return teavm_ws_linux_load_curl();
 }
 
-int64_t gdx_teavm_ws_glfw_create(const char* url) {
+int64_t gdx_teavm_ws_glfw_create(const char* url, int insecure_tls) {
     teavm_ws_set_error(NULL);
     if(url == NULL || url[0] == '\0') {
         teavm_ws_set_error("A websocket URL is required.");
@@ -1144,6 +1159,16 @@ int64_t gdx_teavm_ws_glfw_create(const char* url) {
                     "Failed to configure websocket connection timeout.")) {
         gdx_teavm_ws_glfw_destroy((int64_t)(intptr_t)handle);
         return 0;
+    }
+
+    if(insecure_tls) {
+        if(!teavm_ws_easy_setopt_long(handle, CURLOPT_SSL_VERIFYPEER, 0L,
+                    "Failed to disable libcurl certificate verification.")
+                || !teavm_ws_easy_setopt_long(handle, CURLOPT_SSL_VERIFYHOST, 0L,
+                    "Failed to disable libcurl hostname verification.")) {
+            gdx_teavm_ws_glfw_destroy((int64_t)(intptr_t)handle);
+            return 0;
+        }
     }
 
     handle->error_buffer[0] = '\0';
@@ -1324,7 +1349,7 @@ int gdx_teavm_ws_glfw_last_error(void* target_buffer, int target_buffer_capacity
 #else
 
 int gdx_teavm_ws_glfw_supported(void) { return 0; }
-int64_t gdx_teavm_ws_glfw_create(const char* url) { (void)url; return 0; }
+int64_t gdx_teavm_ws_glfw_create(const char* url, int insecure_tls) { (void)url; (void)insecure_tls; return 0; }
 int gdx_teavm_ws_glfw_state(int64_t handle) { (void)handle; return 3; }
 int gdx_teavm_ws_glfw_send_text(int64_t handle, const char* text) { (void)handle; (void)text; return 0; }
 int gdx_teavm_ws_glfw_close(int64_t handle, int code, const char* reason) { (void)handle; (void)code; (void)reason; return 0; }
