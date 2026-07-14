@@ -176,7 +176,7 @@ Package the generated TeaVM iOS app as an IPA:
 ```
 
 The demo uses the interactive `gdx-teavm` websocket UI flow and connects to `wss://ws.postman-echo.com/raw` by default.
-The desktop, Android, RoboVM iOS, TeaVM Android, and TeaVM desktop-c examples also include a local `wss://`
+The desktop, Android, RoboVM iOS, TeaVM Android, TeaVM iOS, and TeaVM desktop-c examples also include a local `wss://`
 permessage-deflate option for testing the Netty demo server with a generated self-signed certificate.
 
 ## Basic usage
@@ -263,7 +263,7 @@ address, or temporary hostname mismatch:
 
 Do not use this helper for production traffic. Backends that cannot override TLS validation, such as browser-backed
 websocket implementations, reject this helper with a `WebSocketException`. The common JVM backend, TeaVM Android
-backend, and TeaVM desktop-c backend support it.
+backend, TeaVM iOS backend, and TeaVM desktop-c backend support it.
 
 ## Changes
 

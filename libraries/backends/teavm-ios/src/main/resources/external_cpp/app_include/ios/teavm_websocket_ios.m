@@ -90,16 +90,18 @@ static NSString* teavm_ws_ios_describe_error(NSError* error, NSString* fallback)
 @property(nonatomic, strong) NSLock* lock;
 @property(nonatomic, assign) int state;
 @property(nonatomic, assign) BOOL closeEventEmitted;
+@property(nonatomic, assign) BOOL insecureTls;
 @end
 
 @implementation GdxTeaVMIOSWebSocket
 
-- (instancetype)initWithURL:(NSURL*)url {
+- (instancetype)initWithURL:(NSURL*)url insecureTls:(BOOL)insecureTls {
     self = [super init];
     if(self != nil) {
         _events = [NSMutableArray array];
         _lock = [[NSLock alloc] init];
         _state = WS_STATE_CONNECTING;
+        _insecureTls = insecureTls && [url.scheme.lowercaseString isEqualToString:@"wss"];
         NSURLSessionConfiguration* configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
         _session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
         _task = [_session webSocketTaskWithURL:url];
@@ -245,6 +247,22 @@ static NSString* teavm_ws_ios_describe_error(NSError* error, NSString* fallback)
     }];
 }
 
+- (void)URLSession:(NSURLSession*)session
+              task:(NSURLSessionTask*)task
+didReceiveChallenge:(NSURLAuthenticationChallenge*)challenge
+ completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential* credential))completionHandler {
+    (void)session;
+    (void)task;
+    if(self.insecureTls
+            && [challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]
+            && challenge.protectionSpace.serverTrust != nil) {
+        completionHandler(NSURLSessionAuthChallengeUseCredential,
+                [NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust]);
+        return;
+    }
+    completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);
+}
+
 - (void)URLSession:(NSURLSession*)session webSocketTask:(NSURLSessionWebSocketTask*)webSocketTask didOpenWithProtocol:(NSString*)protocol {
     (void)session;
     (void)webSocketTask;
@@ -281,7 +299,7 @@ int gdx_teavm_ws_ios_supported(void) {
     return 0;
 }
 
-int64_t gdx_teavm_ws_ios_create(const char* url) {
+int64_t gdx_teavm_ws_ios_create(const char* url, int insecure_tls) {
     teavm_ws_ios_set_error(NULL);
     if(!gdx_teavm_ws_ios_supported()) {
         teavm_ws_ios_set_error("NSURLSessionWebSocketTask requires iOS 13 or newer.");
@@ -301,7 +319,8 @@ int64_t gdx_teavm_ws_ios_create(const char* url) {
             return 0;
         }
 
-        GdxTeaVMIOSWebSocket* socket = [[GdxTeaVMIOSWebSocket alloc] initWithURL:parsedURL];
+        GdxTeaVMIOSWebSocket* socket = [[GdxTeaVMIOSWebSocket alloc] initWithURL:parsedURL
+                                                                     insecureTls:insecure_tls != 0];
         if(socket == nil) {
             teavm_ws_ios_set_error("Failed to create iOS websocket.");
             return 0;

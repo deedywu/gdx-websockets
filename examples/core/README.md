@@ -22,6 +22,6 @@ It is not meant to be run directly. Instead, other example modules provide the p
 ## Notes
 
 - All selector launchers offer `Normal WSS Echo` and `Local permessage-deflate`.
-- Desktop, Android, RoboVM iOS, TeaVM Android, and TeaVM desktop-c also expose `Local WSS permessage-deflate` for local self-signed certificate testing.
+- Desktop, Android, RoboVM iOS, TeaVM Android, TeaVM iOS, and TeaVM desktop-c also expose `Local WSS permessage-deflate` for local self-signed certificate testing.
 - Keyboard input is available on platforms that forward key events normally.
 - Touch-friendly button controls are enabled for targets that need them, such as TeaVM Android.

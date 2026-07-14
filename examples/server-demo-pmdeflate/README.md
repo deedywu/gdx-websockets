@@ -32,7 +32,7 @@ Then point the desktop demo at it:
 ./gradlew :examples:desktop:run --args="ws://127.0.0.1:8787/"
 ```
 
-The desktop, Android, RoboVM iOS, TeaVM Android, and TeaVM desktop-c examples also expose a local WSS option that connects to:
+The desktop, Android, RoboVM iOS, TeaVM Android, TeaVM iOS, and TeaVM desktop-c examples also expose a local WSS option that connects to:
 
 ```text
 wss://127.0.0.1:8787/
