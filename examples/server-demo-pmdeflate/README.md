@@ -14,11 +14,14 @@ Default bind address:
 - host: `127.0.0.1`
 - port: `8787`
 - websocket path: `/`
-- local certificate: `build/cert/server-demo-pmdeflate.crt`
-- local private key: `build/cert/server-demo-pmdeflate.key`
+- local certificate: `examples/server-demo-pmdeflate/build/cert/server-demo-pmdeflate.crt`
+- local private key: `examples/server-demo-pmdeflate/build/cert/server-demo-pmdeflate.key`
 
 If the certificate or private key is missing, the server generates a local self-signed certificate at startup and
 reuses it on later runs.
+
+That generated certificate is what the demo selector's `Local WSS permessage-deflate` option is intended to talk to.
+On supported native backends, that client path is test-only and disables TLS certificate and hostname validation.
 
 Custom host, port, path, certificate, or private key:
 
@@ -37,6 +40,8 @@ The desktop, Android, RoboVM iOS, TeaVM Android, TeaVM iOS, and TeaVM desktop-c 
 ```text
 wss://127.0.0.1:8787/
 ```
+
+That local WSS selector entry is specifically for self-signed demo testing and should not be used as a production TLS pattern.
 
 or, on Android devices, the host-machine placeholder:
 

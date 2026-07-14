@@ -30,7 +30,7 @@ The Android example is only included when an Android SDK is configured through o
 - It initializes `CommonWebSockets` and uses the normal `AndroidApplication` launcher.
 - The launcher opens a selector with `Normal WSS Echo`, `Local permessage-deflate`, and `Local WSS permessage-deflate` options.
 - The `Local permessage-deflate` endpoint placeholder is `ws://host-machine-ip:8787/`.
-- The `Local WSS permessage-deflate` endpoint placeholder is `wss://host-machine-ip:8787/` and trusts the local server's self-signed certificate for development testing.
+- The `Local WSS permessage-deflate` endpoint placeholder is `wss://host-machine-ip:8787/` and, for development testing only, trusts the local demo server's self-signed certificate by disabling TLS certificate and hostname checks.
 - Replace `host-machine-ip` with your host machine LAN IP before running against a local `:examples:server-demo-pmdeflate` server.
 - The local permessage-deflate demo requests `permessage-deflate` and logs whether the server actually negotiated it.
 - For a real device, change the endpoint in `Settings` to your host LAN IP or another reachable websocket endpoint.

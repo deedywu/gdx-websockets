@@ -1,7 +1,6 @@
 import com.badlogic.gdx.ApplicationListener;
 import com.github.czyzby.websocket.AndroidWebSockets;
 import com.github.czyzby.websocket.WebSocket;
-import com.github.czyzby.websocket.examples.InsecurePerMessageDeflateWebSocketDemo;
 import com.github.czyzby.websocket.examples.PerMessageDeflateWebSocketDemo;
 import com.github.czyzby.websocket.examples.WebSocketDemo;
 import com.github.czyzby.websocket.examples.WebSocketDemoSelector;
@@ -65,36 +64,7 @@ public class WebSocketsAndroidLauncher {
     }
 
     private static ApplicationListener createPerMessageDeflateDemo(final String endpoint, final boolean insecure) {
-        if (insecure) {
-            return new InsecurePerMessageDeflateWebSocketDemo(endpoint, true) {
-                @Override
-                public void render() {
-                    TeaVMAndroidTextInput.update();
-                    super.render();
-                }
-
-                @Override
-                protected void promptForEndpointAddress() {
-                    promptForEndpointAddressWithNativeDialog(getEndpointSettingsAddress(), new EndpointAddressReceiver() {
-                        @Override
-                        public void input(final String text) {
-                            setEndpointSettingsAddress(text);
-                        }
-                    });
-                }
-
-                @Override
-                protected String getNegotiatedExtensionsDescription(final WebSocket webSocket) {
-                    return WebSocketsAndroidLauncher.getNegotiatedExtensionsDescription(webSocket);
-                }
-
-                @Override
-                protected Boolean isPerMessageDeflateNegotiated(final WebSocket webSocket) {
-                    return WebSocketsAndroidLauncher.isPerMessageDeflateNegotiated(webSocket);
-                }
-            };
-        }
-        return new PerMessageDeflateWebSocketDemo(endpoint, true) {
+        return new PerMessageDeflateWebSocketDemo(endpoint, true, insecure) {
             @Override
             public void render() {
                 TeaVMAndroidTextInput.update();

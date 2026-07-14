@@ -5,7 +5,6 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.github.czyzby.websocket.CommonWebSockets;
 import com.github.czyzby.websocket.WebSocket;
-import com.github.czyzby.websocket.examples.InsecurePerMessageDeflateWebSocketDemo;
 import com.github.czyzby.websocket.examples.PerMessageDeflateWebSocketDemo;
 import com.github.czyzby.websocket.examples.WebSocketDemoSelector;
 import com.github.czyzby.websocket.impl.NvWebSocket;
@@ -44,20 +43,7 @@ public class DesktopLauncher {
     }
 
     private static ApplicationListener createPerMessageDeflateDemo(final String endpoint, final boolean insecure) {
-        if (insecure) {
-            return new InsecurePerMessageDeflateWebSocketDemo(endpoint) {
-                @Override
-                protected String getNegotiatedExtensionsDescription(final WebSocket webSocket) {
-                    return DesktopLauncher.getNegotiatedExtensionsDescription(webSocket);
-                }
-
-                @Override
-                protected Boolean isPerMessageDeflateNegotiated(final WebSocket webSocket) {
-                    return DesktopLauncher.isPerMessageDeflateNegotiated(webSocket);
-                }
-            };
-        }
-        return new PerMessageDeflateWebSocketDemo(endpoint) {
+        return new PerMessageDeflateWebSocketDemo(endpoint, true, insecure) {
             @Override
             protected String getNegotiatedExtensionsDescription(final WebSocket webSocket) {
                 return DesktopLauncher.getNegotiatedExtensionsDescription(webSocket);

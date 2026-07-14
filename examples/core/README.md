@@ -15,8 +15,8 @@ It is not meant to be run directly. Instead, other example modules provide the p
 
 - `WebSocketDemoSelector`: the shared entry screen for choosing which demo scenario to run
 - `WebSocketDemo`: the common websocket sample UI and interaction logic
-- `PerMessageDeflateWebSocketDemo`: a shared variant that requests `permessage-deflate` and logs the negotiated result
-- `InsecurePerMessageDeflateWebSocketDemo`: a local `wss://` variant for launchers that support self-signed local WSS testing
+- `PerMessageDeflateWebSocketDemo`: a shared variant that requests `permessage-deflate`, logs the negotiated result, and can explicitly enable insecure local TLS testing
+- `InsecurePerMessageDeflateWebSocketDemo`: a compatibility wrapper around the insecure local `wss://` demo mode
 - shared rendering, logging, and reconnect flow used by every example target
 
 ## Notes

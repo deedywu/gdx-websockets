@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 
@@ -113,15 +114,18 @@ public class WebSocketDemoSelector extends ApplicationAdapter implements InputPr
     }
 
     public static DemoOption normalWssEcho(final DemoFactory factory) {
-        return new DemoOption("Normal WSS Echo", WebSocketDemo.DEFAULT_URL, factory);
+        return new DemoOption("Normal WSS Echo", WebSocketDemo.DEFAULT_URL,
+                "Public WSS endpoint with normal TLS certificate validation.", factory);
     }
 
     public static DemoOption localPerMessageDeflate(final String endpoint, final DemoFactory factory) {
-        return new DemoOption("Local permessage-deflate", endpoint, factory);
+        return new DemoOption("Local permessage-deflate", endpoint,
+                "Local ws:// test server without TLS certificate checks.", factory);
     }
 
     public static DemoOption localSecurePerMessageDeflate(final String endpoint, final DemoFactory factory) {
-        return new DemoOption("Local WSS permessage-deflate", endpoint, factory);
+        return new DemoOption("Local WSS permessage-deflate", endpoint,
+                "Test only: local demo self-signed cert; skips TLS cert/hostname checks.", factory);
     }
 
     @Override
@@ -156,7 +160,7 @@ public class WebSocketDemoSelector extends ApplicationAdapter implements InputPr
 
         final float margin = 32f * uiScale;
         final float gap = 16f * uiScale;
-        final float optionHeight = 86f * uiScale;
+        final float optionHeight = 112f * uiScale;
         final float optionWidth = Math.min(width - margin * 2f, 620f * uiScale);
         final float totalHeight = optionHeight * optionBounds.size + gap * (optionBounds.size - 1);
         final float startX = (width - optionWidth) * 0.5f;
@@ -214,13 +218,19 @@ public class WebSocketDemoSelector extends ApplicationAdapter implements InputPr
 
     private void drawOptionText(final DemoOption option, final Rectangle bounds) {
         final float textX = bounds.x + 24f * uiScale;
-        final float titleY = bounds.y + bounds.height - 26f * uiScale;
-        final float descriptionY = titleY - 32f * uiScale;
+        final float maxTextWidth = bounds.width - 48f * uiScale;
+        final float titleY = bounds.y + bounds.height - 24f * uiScale;
+        final float descriptionY = titleY - 30f * uiScale;
+        final float detailY = descriptionY - 28f * uiScale;
 
         font.setColor(Color.WHITE);
         font.draw(batch, option.title, textX, titleY);
         font.setColor(Color.valueOf("9CE5FF"));
         font.draw(batch, option.description, textX, descriptionY);
+        if (option.detail != null && !option.detail.isEmpty()) {
+            font.setColor(Color.LIGHT_GRAY);
+            font.draw(batch, option.detail, textX, detailY, maxTextWidth, Align.left, true);
+        }
     }
 
     private void drawCentered(final String text, final float centerX, final float y) {
@@ -404,11 +414,17 @@ public class WebSocketDemoSelector extends ApplicationAdapter implements InputPr
     public static class DemoOption {
         private final String title;
         private final String description;
+        private final String detail;
         private final DemoFactory factory;
 
         public DemoOption(final String title, final String description, final DemoFactory factory) {
+            this(title, description, null, factory);
+        }
+
+        public DemoOption(final String title, final String description, final String detail, final DemoFactory factory) {
             this.title = title;
             this.description = description;
+            this.detail = detail;
             this.factory = factory;
         }
     }

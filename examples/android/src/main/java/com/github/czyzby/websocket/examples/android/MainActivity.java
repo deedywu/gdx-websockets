@@ -7,7 +7,6 @@ import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.github.czyzby.websocket.CommonWebSockets;
 import com.github.czyzby.websocket.WebSocket;
-import com.github.czyzby.websocket.examples.InsecurePerMessageDeflateWebSocketDemo;
 import com.github.czyzby.websocket.examples.PerMessageDeflateWebSocketDemo;
 import com.github.czyzby.websocket.examples.WebSocketDemoSelector;
 import com.github.czyzby.websocket.impl.NvWebSocket;
@@ -47,20 +46,7 @@ public class MainActivity extends AndroidApplication {
     }
 
     private static ApplicationListener createPerMessageDeflateDemo(final String endpoint, final boolean insecure) {
-        if (insecure) {
-            return new InsecurePerMessageDeflateWebSocketDemo(endpoint, true) {
-                @Override
-                protected String getNegotiatedExtensionsDescription(final WebSocket webSocket) {
-                    return MainActivity.getNegotiatedExtensionsDescription(webSocket);
-                }
-
-                @Override
-                protected Boolean isPerMessageDeflateNegotiated(final WebSocket webSocket) {
-                    return MainActivity.isPerMessageDeflateNegotiated(webSocket);
-                }
-            };
-        }
-        return new PerMessageDeflateWebSocketDemo(endpoint, true) {
+        return new PerMessageDeflateWebSocketDemo(endpoint, true, insecure) {
             @Override
             protected String getNegotiatedExtensionsDescription(final WebSocket webSocket) {
                 return MainActivity.getNegotiatedExtensionsDescription(webSocket);

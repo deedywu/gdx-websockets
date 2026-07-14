@@ -1,6 +1,5 @@
 import com.badlogic.gdx.ApplicationListener;
 import com.github.czyzby.websocket.IOSWebSockets;
-import com.github.czyzby.websocket.examples.InsecurePerMessageDeflateWebSocketDemo;
 import com.github.czyzby.websocket.examples.PerMessageDeflateWebSocketDemo;
 import com.github.czyzby.websocket.examples.WebSocketDemoSelector;
 import com.github.xpenatan.gdx.teavm.backends.ios.IOSApplication;
@@ -40,8 +39,8 @@ public class WebSocketsIOSLauncher {
                 new WebSocketDemoSelector.DemoFactory() {
                     @Override
                     public ApplicationListener create() {
-                        return new InsecurePerMessageDeflateWebSocketDemo(
-                                PerMessageDeflateWebSocketDemo.DEFAULT_SECURE_PMDEFLATE_ENDPOINT, true);
+                        return new PerMessageDeflateWebSocketDemo(
+                                PerMessageDeflateWebSocketDemo.DEFAULT_SECURE_PMDEFLATE_ENDPOINT, true, true);
                     }
                 });
     }

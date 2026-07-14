@@ -36,7 +36,7 @@ The module is only included when an Android SDK is configured through one of:
 - The Android Activity is a minimal `TeaAndroidActivity` subclass.
 - The launcher opens a selector with `Normal WSS Echo`, `Local permessage-deflate`, and `Local WSS permessage-deflate` options.
 - The `Local permessage-deflate` endpoint placeholder is `ws://host-machine-ip:8787/`.
-- The `Local WSS permessage-deflate` endpoint placeholder is `wss://host-machine-ip:8787/` and trusts the local server's self-signed certificate for development testing.
+- The `Local WSS permessage-deflate` endpoint placeholder is `wss://host-machine-ip:8787/` and, for development testing only, trusts the local demo server's self-signed certificate by disabling TLS certificate and hostname checks.
 - Replace `host-machine-ip` with your host machine LAN IP before testing against a local `:examples:server-demo-pmdeflate` server.
 - Touch-friendly on-screen controls stay enabled because TeaVM Android does not receive the same keyboard events as the normal Android example.
 - Tapping the Address field opens a native Android text input dialog because TeaVM Android does not currently route `Gdx.input.getTextInput` to an editable popup.

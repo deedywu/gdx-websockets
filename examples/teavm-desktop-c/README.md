@@ -39,7 +39,7 @@ Release variants are also available:
 - The shared demo still comes from `:examples:core`.
 - The launcher opens a selector with `Normal WSS Echo`, `Local permessage-deflate`, and `Local WSS permessage-deflate` options.
 - The `Local permessage-deflate` option defaults to `ws://127.0.0.1:8787/`, which lets it talk to a local `:examples:server-demo-pmdeflate` server.
-- The `Local WSS permessage-deflate` option defaults to `wss://127.0.0.1:8787/` and trusts the local server's self-signed certificate for development testing.
+- The `Local WSS permessage-deflate` option defaults to `wss://127.0.0.1:8787/` and, for development testing only, trusts the local demo server's self-signed certificate by disabling TLS certificate and hostname checks.
 - The local permessage-deflate demo exercises the same UI path, but the current TeaVM desktop-c backend does not implement the `permessage-deflate` websocket extension yet, so the local server reports `negotiated=none`.
 - This example uses the local `:libraries:backends:teavm-desktop-c` websocket backend module.
 - `backend-glfw` currently follows the `-SNAPSHOT` line in the same spirit as `teavm-android`.

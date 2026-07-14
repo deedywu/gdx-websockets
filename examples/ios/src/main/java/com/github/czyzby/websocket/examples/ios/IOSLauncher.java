@@ -5,7 +5,6 @@ import com.badlogic.gdx.backends.iosrobovm.IOSApplication;
 import com.badlogic.gdx.backends.iosrobovm.IOSApplicationConfiguration;
 import com.github.czyzby.websocket.CommonWebSockets;
 import com.github.czyzby.websocket.WebSocket;
-import com.github.czyzby.websocket.examples.InsecurePerMessageDeflateWebSocketDemo;
 import com.github.czyzby.websocket.examples.PerMessageDeflateWebSocketDemo;
 import com.github.czyzby.websocket.examples.WebSocketDemoSelector;
 import com.github.czyzby.websocket.impl.NvWebSocket;
@@ -46,20 +45,7 @@ public class IOSLauncher extends IOSApplication.Delegate {
     }
 
     private static ApplicationListener createPerMessageDeflateDemo(final String endpoint, final boolean insecure) {
-        if (insecure) {
-            return new InsecurePerMessageDeflateWebSocketDemo(endpoint) {
-                @Override
-                protected String getNegotiatedExtensionsDescription(final WebSocket webSocket) {
-                    return IOSLauncher.getNegotiatedExtensionsDescription(webSocket);
-                }
-
-                @Override
-                protected Boolean isPerMessageDeflateNegotiated(final WebSocket webSocket) {
-                    return IOSLauncher.isPerMessageDeflateNegotiated(webSocket);
-                }
-            };
-        }
-        return new PerMessageDeflateWebSocketDemo(endpoint) {
+        return new PerMessageDeflateWebSocketDemo(endpoint, true, insecure) {
             @Override
             protected String getNegotiatedExtensionsDescription(final WebSocket webSocket) {
                 return IOSLauncher.getNegotiatedExtensionsDescription(webSocket);

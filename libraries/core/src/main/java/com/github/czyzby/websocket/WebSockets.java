@@ -45,7 +45,11 @@ public class WebSockets {
      *
      * @param url a valid URL.
      * @return {@link WebSocket} instance, allowing to connect with the passed URL.
+     * @deprecated This method intentionally disables TLS certificate and hostname validation. It is retained for local
+     *             development and testing only, is not scheduled for removal, and must never be used for production
+     *             traffic.
      * @see #newSocket(String) */
+    @Deprecated
     public static WebSocket newInsecureSocket(final String url) {
         if (FACTORY == null) {
             throw new WebSocketException("Web sockets are not initiated.");
@@ -122,9 +126,19 @@ public class WebSockets {
          * @return platform-specific {@link WebSocket} instance. */
         WebSocket newWebSocket(String url);
 
-        /** @param url URL to connect with. Factory can assume that the URL is not null and valid.
+        /** Creates a platform-specific {@link WebSocket} instance with insecure local TLS testing enabled.
+         *
+         * <p>This method is unsafe because it may disable TLS certificate and hostname validation. Use it only in
+         * local development or testing environments, and never for production traffic.</p>
+         *
+         * @author deedywu
+         * @param url URL to connect with. Factory can assume that the URL is not null and valid.
          * @return platform-specific {@link WebSocket} instance with insecure local TLS testing enabled.
-         * @throws WebSocketException if the backend does not support insecure TLS overrides. */
+         * @throws WebSocketException if the backend does not support insecure TLS overrides.
+         * @deprecated This method intentionally disables TLS certificate and hostname validation. It is retained for
+         *             local development and testing backend support only, is not scheduled for removal, and must never
+         *             be used for production traffic. */
+        @Deprecated
         WebSocket newInsecureWebSocket(String url);
     }
 }

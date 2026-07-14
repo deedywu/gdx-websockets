@@ -76,7 +76,7 @@ IPA output is written under `examples/teavm-ios/build/distributions`.
 - The launcher initializes `IOSWebSockets` before creating the `IOSApplication`.
 - The launcher opens a selector with `Normal WSS Echo`, `Local permessage-deflate`, and `Local WSS permessage-deflate` options.
 - The `Local permessage-deflate` option defaults to `ws://127.0.0.1:8787/` for simulator testing against `:examples:server-demo-pmdeflate`.
-- The `Local WSS permessage-deflate` option defaults to `wss://127.0.0.1:8787/` and trusts the local server's self-signed certificate for development testing.
+- The `Local WSS permessage-deflate` option defaults to `wss://127.0.0.1:8787/` and, for development testing only, trusts the local demo server's self-signed certificate by disabling TLS certificate and hostname checks.
 - For a real device, change the endpoint in `Settings` to your host machine LAN IP or another reachable websocket endpoint.
 - The local permessage-deflate demo exercises the same UI path, but the current TeaVM iOS backend uses `NSURLSessionWebSocketTask` without extension negotiation controls, so negotiated extensions remain unavailable for this backend.
 - This variant uses on-screen touch buttons, matching the mobile TeaVM Android example.

@@ -5,7 +5,7 @@ import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
 
 val groupId = "com.github.deedywu.gdx-websockets"
-val libraryVersion = "2.0.5"
+val libraryVersion = "2.0.6-rc1"
 
 extra["GROUPID"] = groupId
 extra["VERSION"] = libraryVersion

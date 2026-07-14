@@ -1,22 +1,37 @@
 package com.github.czyzby.websocket.examples;
 
 import com.github.czyzby.websocket.WebSocket;
+import com.github.czyzby.websocket.WebSockets;
 
 /** Shared websocket demo that requests {@code permessage-deflate} and logs the negotiated result when available. */
 public class PerMessageDeflateWebSocketDemo extends WebSocketDemo {
     public static final String DEFAULT_PMDEFLATE_ENDPOINT = "ws://127.0.0.1:8787/";
     public static final String DEFAULT_SECURE_PMDEFLATE_ENDPOINT = "wss://127.0.0.1:8787/";
 
+    private final boolean insecureTls;
+
     public PerMessageDeflateWebSocketDemo() {
-        super(DEFAULT_PMDEFLATE_ENDPOINT);
+        this(DEFAULT_PMDEFLATE_ENDPOINT, true, false);
     }
 
     public PerMessageDeflateWebSocketDemo(final String endpoint) {
-        super(endpoint);
+        this(endpoint, true, false);
     }
 
     public PerMessageDeflateWebSocketDemo(final String endpoint, final boolean touchControlsEnabled) {
+        this(endpoint, touchControlsEnabled, false);
+    }
+
+    public PerMessageDeflateWebSocketDemo(final String endpoint, final boolean touchControlsEnabled,
+            final boolean insecureTls) {
         super(endpoint, touchControlsEnabled);
+        this.insecureTls = insecureTls;
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    protected WebSocket createSocket(final String socketEndpoint) {
+        return insecureTls ? WebSockets.newInsecureSocket(socketEndpoint) : super.createSocket(socketEndpoint);
     }
 
     @Override
