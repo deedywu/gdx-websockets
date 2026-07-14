@@ -9,7 +9,7 @@ extern "C" {
 #endif
 
 int gdx_teavm_ws_android_supported(void);
-int64_t gdx_teavm_ws_android_create(const char* url, int use_per_message_deflate);
+int64_t gdx_teavm_ws_android_create(const char* url, int use_per_message_deflate, int insecure_tls);
 int gdx_teavm_ws_android_state(int64_t handle);
 int gdx_teavm_ws_android_send_text(int64_t handle, const char* text);
 int gdx_teavm_ws_android_permessage_deflate_agreed(int64_t handle);

@@ -37,6 +37,22 @@ public class WebSockets {
         return FACTORY.newWebSocket(url);
     }
 
+    /** Creates a web socket that may disable TLS certificate and hostname checks, if supported by the active backend.
+     *
+     * <p>This is an explicit development/testing helper for local {@code wss://} endpoints with self-signed
+     * certificates or local-IP hostname mismatches. Backends that cannot or should not override TLS validation will
+     * throw {@link WebSocketException}. Do not use this helper for production traffic.</p>
+     *
+     * @param url a valid URL.
+     * @return {@link WebSocket} instance, allowing to connect with the passed URL.
+     * @see #newSocket(String) */
+    public static WebSocket newInsecureSocket(final String url) {
+        if (FACTORY == null) {
+            throw new WebSocketException("Web sockets are not initiated.");
+        }
+        return FACTORY.newInsecureWebSocket(url);
+    }
+
     /** @param host IP or domain name of the server.
      * @param port port of the application. Will be validated.
      * @return web socket URL.
@@ -105,5 +121,12 @@ public class WebSockets {
         /** @param url URL to connect with. Factory can assume that the URL is not null and valid.
          * @return platform-specific {@link WebSocket} instance. */
         WebSocket newWebSocket(String url);
+
+        /** @param url URL to connect with. Factory can assume that the URL is not null and valid.
+         * @return platform-specific {@link WebSocket} instance with insecure local TLS testing enabled.
+         * @throws WebSocketException if the backend does not support insecure TLS overrides. */
+        default WebSocket newInsecureWebSocket(final String url) {
+            throw new WebSocketException("Insecure web sockets are not supported by this backend.");
+        }
     }
 }

@@ -29,9 +29,13 @@ Local permessage-deflate server:
 ./gradlew :examples:server-demo-pmdeflate:run
 ```
 
+The server accepts both `ws://` and `wss://` on the same port. If its local certificate is missing, it generates a
+self-signed certificate under `examples/server-demo-pmdeflate/build/cert`.
+
 The desktop, GWT, Android, iOS, TeaVM web, TeaVM desktop-c, TeaVM Android, and TeaVM iOS launchers open a shared selector with `Normal WSS Echo` and `Local permessage-deflate` options.
 The desktop, GWT, iOS simulator, TeaVM web, TeaVM desktop-c, and TeaVM iOS simulator `Local permessage-deflate` option uses `ws://127.0.0.1:8787/` for local testing.
 The Android and TeaVM Android `Local permessage-deflate` option uses the placeholder `ws://host-machine-ip:8787/` for the same local server.
+The desktop, Android, RoboVM iOS, and TeaVM Android launchers also expose `Local WSS permessage-deflate` for testing the same server through a self-signed local `wss://` connection.
 Replace `host-machine-ip` with your host machine LAN IP, or use the demo UI to switch to another reachable endpoint.
 For a real iOS or TeaVM iOS device, use the demo UI to replace `127.0.0.1` with your host machine LAN IP.
 Type text, press `Enter` to send, `F2` to edit connection settings, `F5` to reconnect, and `Esc` to clear the input buffer.

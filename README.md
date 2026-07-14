@@ -176,6 +176,8 @@ Package the generated TeaVM iOS app as an IPA:
 ```
 
 The demo uses the interactive `gdx-teavm` websocket UI flow and connects to `wss://ws.postman-echo.com/raw` by default.
+The desktop, Android, RoboVM iOS, and TeaVM Android examples also include a local `wss://` permessage-deflate option for
+testing the Netty demo server with a generated self-signed certificate.
 
 ## Basic usage
 
@@ -249,13 +251,27 @@ In TeaVM iOS launchers, make sure to call `IOSWebSockets.initiate()` before crea
 `setPerMessageDeflate(true)` is a core API flag. Backends that can control websocket extension negotiation request
 `permessage-deflate` during the handshake; other backends may ignore the flag.
 
+### Local WSS testing
+
+For local development only, `WebSockets.newInsecureSocket(url)` requests a socket that trusts every TLS certificate and
+disables hostname verification. This is useful for local `wss://` testing with a self-signed certificate, local IP
+address, or temporary hostname mismatch:
+
+```
+        WebSocket socket = WebSockets.newInsecureSocket("wss://192.168.2.1:8080/");
+```
+
+Do not use this helper for production traffic. Backends that cannot override TLS validation, such as browser-backed
+websocket implementations, reject this helper with a `WebSocketException`. The common JVM backend and TeaVM Android
+backend support it.
+
 ## Changes
 
 ### 2.0.4
 
 - Added core API support for requesting `permessage-deflate` before connecting, with backend support where websocket extension negotiation is exposed.
 - Unified the websocket examples across desktop, GWT, Android, iOS, and TeaVM targets with a shared demo selector, consistent launcher behavior, and matching mobile UI scaling.
-- Added a local Netty `permessage-deflate` test server plus example flows for local websocket testing and extension negotiation reporting where supported.
+- Added a local Netty `permessage-deflate` test server plus example flows for local websocket/WSS testing and extension negotiation reporting where supported.
 
 ### 2.0.3
 

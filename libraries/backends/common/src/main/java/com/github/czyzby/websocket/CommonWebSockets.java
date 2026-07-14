@@ -31,6 +31,10 @@ public class CommonWebSockets {
      * traffic; production clients should rely on normal certificate validation or a deliberately configured
      * {@link SSLContext}.</p> */
     public static WebSocket newInsecureSocket(final String url) {
+        return newInsecureNvWebSocket(url);
+    }
+
+    private static NvWebSocket newInsecureNvWebSocket(final String url) {
         final NvWebSocket webSocket = new NvWebSocket(url);
         webSocket.setVerifyHostname(false);
         webSocket.setSSLContext(newTrustAllSSLContext());
@@ -68,6 +72,11 @@ public class CommonWebSockets {
         @Override
         public WebSocket newWebSocket(final String url) {
             return new NvWebSocket(url);
+        }
+
+        @Override
+        public WebSocket newInsecureWebSocket(final String url) {
+            return newInsecureNvWebSocket(url);
         }
     }
 }

@@ -1,6 +1,7 @@
 import com.badlogic.gdx.ApplicationListener;
 import com.github.czyzby.websocket.AndroidWebSockets;
 import com.github.czyzby.websocket.WebSocket;
+import com.github.czyzby.websocket.examples.InsecurePerMessageDeflateWebSocketDemo;
 import com.github.czyzby.websocket.examples.PerMessageDeflateWebSocketDemo;
 import com.github.czyzby.websocket.examples.WebSocketDemo;
 import com.github.czyzby.websocket.examples.WebSocketDemoSelector;
@@ -10,6 +11,7 @@ import com.github.xpenatan.gdx.teavm.backends.android.AndroidApplicationConfigur
 
 public class WebSocketsAndroidLauncher {
     private static final String LOCAL_PMDEFLATE_ENDPOINT = "ws://host-machine-ip:8787/";
+    private static final String LOCAL_SECURE_PMDEFLATE_ENDPOINT = "wss://host-machine-ip:8787/";
 
     public static void main(String[] args) {
         AndroidWebSockets.initiate();
@@ -19,17 +21,27 @@ public class WebSocketsAndroidLauncher {
     }
 
     private static ApplicationListener createDemoSelector() {
-        return WebSocketDemoSelector.createDefaultSelector(new WebSocketDemoSelector.DemoFactory() {
-            @Override
-            public ApplicationListener create() {
-                return createNormalDemo();
-            }
-        }, LOCAL_PMDEFLATE_ENDPOINT, new WebSocketDemoSelector.DemoFactory() {
-            @Override
-            public ApplicationListener create() {
-                return createPerMessageDeflateDemo();
-            }
-        });
+        return WebSocketDemoSelector.createDefaultSelectorWithLocalWss(
+                new WebSocketDemoSelector.DemoFactory() {
+                    @Override
+                    public ApplicationListener create() {
+                        return createNormalDemo();
+                    }
+                },
+                LOCAL_PMDEFLATE_ENDPOINT,
+                new WebSocketDemoSelector.DemoFactory() {
+                    @Override
+                    public ApplicationListener create() {
+                        return createPerMessageDeflateDemo(LOCAL_PMDEFLATE_ENDPOINT, false);
+                    }
+                },
+                LOCAL_SECURE_PMDEFLATE_ENDPOINT,
+                new WebSocketDemoSelector.DemoFactory() {
+                    @Override
+                    public ApplicationListener create() {
+                        return createPerMessageDeflateDemo(LOCAL_SECURE_PMDEFLATE_ENDPOINT, true);
+                    }
+                });
     }
 
     private static ApplicationListener createNormalDemo() {
@@ -52,8 +64,37 @@ public class WebSocketsAndroidLauncher {
         };
     }
 
-    private static ApplicationListener createPerMessageDeflateDemo() {
-        return new PerMessageDeflateWebSocketDemo(LOCAL_PMDEFLATE_ENDPOINT, true) {
+    private static ApplicationListener createPerMessageDeflateDemo(final String endpoint, final boolean insecure) {
+        if (insecure) {
+            return new InsecurePerMessageDeflateWebSocketDemo(endpoint, true) {
+                @Override
+                public void render() {
+                    TeaVMAndroidTextInput.update();
+                    super.render();
+                }
+
+                @Override
+                protected void promptForEndpointAddress() {
+                    promptForEndpointAddressWithNativeDialog(getEndpointSettingsAddress(), new EndpointAddressReceiver() {
+                        @Override
+                        public void input(final String text) {
+                            setEndpointSettingsAddress(text);
+                        }
+                    });
+                }
+
+                @Override
+                protected String getNegotiatedExtensionsDescription(final WebSocket webSocket) {
+                    return WebSocketsAndroidLauncher.getNegotiatedExtensionsDescription(webSocket);
+                }
+
+                @Override
+                protected Boolean isPerMessageDeflateNegotiated(final WebSocket webSocket) {
+                    return WebSocketsAndroidLauncher.isPerMessageDeflateNegotiated(webSocket);
+                }
+            };
+        }
+        return new PerMessageDeflateWebSocketDemo(endpoint, true) {
             @Override
             public void render() {
                 TeaVMAndroidTextInput.update();
@@ -72,18 +113,26 @@ public class WebSocketsAndroidLauncher {
 
             @Override
             protected String getNegotiatedExtensionsDescription(final WebSocket webSocket) {
-                return webSocket instanceof AndroidWebSocket
-                        ? ((AndroidWebSocket) webSocket).getAgreedExtensionsDescription()
-                        : null;
+                return WebSocketsAndroidLauncher.getNegotiatedExtensionsDescription(webSocket);
             }
 
             @Override
             protected Boolean isPerMessageDeflateNegotiated(final WebSocket webSocket) {
-                return webSocket instanceof AndroidWebSocket
-                        ? Boolean.valueOf(((AndroidWebSocket) webSocket).isPerMessageDeflateAgreed())
-                        : null;
+                return WebSocketsAndroidLauncher.isPerMessageDeflateNegotiated(webSocket);
             }
         };
+    }
+
+    private static String getNegotiatedExtensionsDescription(final WebSocket webSocket) {
+        return webSocket instanceof AndroidWebSocket
+                ? ((AndroidWebSocket) webSocket).getAgreedExtensionsDescription()
+                : null;
+    }
+
+    private static Boolean isPerMessageDeflateNegotiated(final WebSocket webSocket) {
+        return webSocket instanceof AndroidWebSocket
+                ? Boolean.valueOf(((AndroidWebSocket) webSocket).isPerMessageDeflateAgreed())
+                : null;
     }
 
     private static void promptForEndpointAddressWithNativeDialog(final String address,

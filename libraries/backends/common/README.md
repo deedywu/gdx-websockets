@@ -19,11 +19,12 @@ Add JitPack to your repositories:
 Set `wsVersion` to a tag, branch snapshot, or commit published from `deedywu/gdx-websockets`.
 
 ## Local WSS testing
-For local development only, `CommonWebSockets.newInsecureSocket(url)` creates a `wss://` socket that trusts every TLS
-certificate and disables hostname verification. This is useful when testing against a local IP address, self-signed
-certificate, or temporary certificate whose hostname does not match the address:
+For local development only, `WebSockets.newInsecureSocket(url)` creates a `wss://` socket that trusts every TLS
+certificate and disables hostname verification after `CommonWebSockets.initiate()` has registered this backend. This is
+useful when testing against a local IP address, self-signed certificate, or temporary certificate whose hostname does
+not match the address:
 ```
-        WebSocket socket = CommonWebSockets.newInsecureSocket("wss://192.168.2.1:8080/");
+        WebSocket socket = WebSockets.newInsecureSocket("wss://192.168.2.1:8080/");
 ```
 Do not use this helper for production traffic. Production clients should use normal TLS validation, or configure a
 specific trusted certificate/keystore through a custom SSL context instead of trusting every certificate.
