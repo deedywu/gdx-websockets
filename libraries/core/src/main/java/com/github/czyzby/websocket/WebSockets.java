@@ -117,7 +117,7 @@ public class WebSockets {
     /** Provides web socket instances.
      *
      * @author MJ */
-    protected static interface WebSocketFactory {
+    protected interface WebSocketFactory {
         /** @param url URL to connect with. Factory can assume that the URL is not null and valid.
          * @return platform-specific {@link WebSocket} instance. */
         WebSocket newWebSocket(String url);
@@ -125,8 +125,6 @@ public class WebSockets {
         /** @param url URL to connect with. Factory can assume that the URL is not null and valid.
          * @return platform-specific {@link WebSocket} instance with insecure local TLS testing enabled.
          * @throws WebSocketException if the backend does not support insecure TLS overrides. */
-        default WebSocket newInsecureWebSocket(final String url) {
-            throw new WebSocketException("Insecure web sockets are not supported by this backend.");
-        }
+        WebSocket newInsecureWebSocket(String url);
     }
 }
