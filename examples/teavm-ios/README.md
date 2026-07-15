@@ -8,8 +8,7 @@ It uses the experimental TeaVM iOS workflow, not the standard RoboVM iOS backend
 
 This module is intended to consume published `gdx-teavm` artifacts from Maven:
 
-- release line such as `1.5.6` when available
-- or `-SNAPSHOT` from the Sonatype snapshots repository
+- `-SNAPSHOT` from the Sonatype snapshots repository until a release publishes `backend-ios`
 
 It consumes this repository's local `:libraries:backends:teavm-ios` project module so the example always uses the backend sources being edited here.
 
@@ -81,4 +80,4 @@ IPA output is written under `examples/teavm-ios/build/distributions`.
 - The local permessage-deflate demo exercises the same UI path, but the current TeaVM iOS backend uses `NSURLSessionWebSocketTask` without extension negotiation controls, so negotiated extensions remain unavailable for this backend.
 - This variant uses on-screen touch buttons, matching the mobile TeaVM Android example.
 - The default graphics API is `angle`, which downloads the pinned MetalANGLEKit framework bundle. Set Gradle property `gdx.teavm.ios.graphicsApi=gles` to use the older OpenGL ES / GLKit template.
-- This module includes compatibility resources and a generated CMake patch for the current `backend-ios:-SNAPSHOT` line.
+- This module includes compatibility resources and a generated CMake patch for the current snapshot `gdx-teavm` iOS workflow. The `1.6.0` plugin currently asks Gradle for `com.github.xpenatan.gdx-teavm:backend-ios:1.6.0`, which is not published to Maven Central.

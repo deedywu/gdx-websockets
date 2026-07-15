@@ -2,7 +2,7 @@ import org.teavm.gradle.api.OptimizationLevel
 
 plugins {
     id("com.android.application") version "8.10.1"
-    id("com.github.xpenatan.gdx-teavm") version "-SNAPSHOT"
+    id("com.github.xpenatan.gdx-teavm") version "1.6.0"
 }
 
 val gdxVersion: String by rootProject.extra

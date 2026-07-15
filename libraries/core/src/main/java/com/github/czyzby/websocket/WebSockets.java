@@ -5,6 +5,8 @@ import com.github.czyzby.websocket.data.WebSocketException;
 import com.github.czyzby.websocket.serialization.Serializer;
 import com.github.czyzby.websocket.serialization.impl.JsonSerializer;
 
+import java.util.List;
+
 /** Utilities for web sockets.
  *
  * @author MJ */
@@ -37,6 +39,17 @@ public class WebSockets {
         return FACTORY.newWebSocket(url);
     }
 
+    /** @param url a valid URL.
+     * @author deedywu
+     * @param protocols websocket subprotocols to request during the handshake.
+     * @return {@link WebSocket} instance, allowing to connect with the passed URL.
+     * @see #newSocket(String) */
+    public static WebSocket newSocket(final String url, final List<String> protocols) {
+        final WebSocket webSocket = newSocket(url);
+        webSocket.setProtocols(protocols);
+        return webSocket;
+    }
+
     /** Creates a web socket that may disable TLS certificate and hostname checks, if supported by the active backend.
      *
      * <p>This is an explicit development/testing helper for local {@code wss://} endpoints with self-signed
@@ -55,6 +68,23 @@ public class WebSockets {
             throw new WebSocketException("Web sockets are not initiated.");
         }
         return FACTORY.newInsecureWebSocket(url);
+    }
+
+    /** Creates a web socket that may disable TLS certificate and hostname checks, if supported by the active backend.
+     *
+     * @author deedywu
+     * @param url a valid URL.
+     * @param protocols websocket subprotocols to request during the handshake.
+     * @return {@link WebSocket} instance, allowing to connect with the passed URL.
+     * @deprecated This method intentionally disables TLS certificate and hostname validation. It is retained for local
+     *             development and testing only, is not scheduled for removal, and must never be used for production
+     *             traffic.
+     * @see #newInsecureSocket(String) */
+    @Deprecated
+    public static WebSocket newInsecureSocket(final String url, final List<String> protocols) {
+        final WebSocket webSocket = newInsecureSocket(url);
+        webSocket.setProtocols(protocols);
+        return webSocket;
     }
 
     /** @param host IP or domain name of the server.

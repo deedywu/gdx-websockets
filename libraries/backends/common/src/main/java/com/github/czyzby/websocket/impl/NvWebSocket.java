@@ -32,6 +32,12 @@ public class NvWebSocket extends AbstractWebSocket {
             webSocketFactory.setVerifyHostname(verifyHostname);
             webSocketFactory.setSSLContext(sslContext);
             final WebSocket currentWebSocket = webSocket = webSocketFactory.createSocket(getUrl());
+            final List<String> protocols = getProtocols();
+            if (protocols != null) {
+                for (final String protocol : protocols) {
+                    currentWebSocket.addProtocol(protocol);
+                }
+            }
             if (usePerMessageDeflate) {
                 currentWebSocket.addExtension(WebSocketExtension.PERMESSAGE_DEFLATE);
             }

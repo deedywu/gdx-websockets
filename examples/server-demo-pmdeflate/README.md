@@ -43,8 +43,10 @@ wss://127.0.0.1:8787/
 
 That local WSS selector entry is specifically for self-signed demo testing and should not be used as a production TLS pattern.
 
-or, on Android devices, the host-machine placeholder:
+or, on Android Emulator:
 
 ```text
-wss://host-machine-ip:8787/
+wss://10.0.2.2:8787/
 ```
+
+For a real Android device, replace `10.0.2.2` with the host machine LAN IP and run the server on an address reachable from the device.

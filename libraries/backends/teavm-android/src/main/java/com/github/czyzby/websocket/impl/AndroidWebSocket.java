@@ -53,7 +53,7 @@ public class AndroidWebSocket extends AbstractWebSocket {
         if(nativeHandle != 0 && getState() != WebSocketState.CLOSED) {
             close(WebSockets.ABNORMAL_AUTOMATIC_CLOSE_CODE, "reconnect");
         }
-        long handle = createSocket(getUrl(), usePerMessageDeflate, insecureTls);
+        long handle = createSocket(getUrl(), getProtocolsHeaderValue(), usePerMessageDeflate, insecureTls);
         if(handle == 0) {
             throw new WebSocketException(readReasonBuffer());
         }
@@ -216,7 +216,7 @@ public class AndroidWebSocket extends AbstractWebSocket {
     private static native boolean isNativeSupported();
 
     @Import(name = "gdx_teavm_ws_android_create")
-    private static native long createSocket(String url, boolean usePerMessageDeflate, boolean insecureTls);
+    private static native long createSocket(String url, String protocolsHeader, boolean usePerMessageDeflate, boolean insecureTls);
 
     @Import(name = "gdx_teavm_ws_android_state")
     private static native int socketState(long handle);

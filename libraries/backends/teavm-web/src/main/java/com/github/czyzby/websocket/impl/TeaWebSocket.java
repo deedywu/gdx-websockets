@@ -9,6 +9,8 @@ import org.teavm.jso.typedarrays.ArrayBuffer;
 import org.teavm.jso.typedarrays.Int8Array;
 import org.teavm.jso.websocket.WebSocket;
 
+import java.util.List;
+
 /** Default web socket implementation for TeaVM applications. Implementation loosely based on
  * GwtWebSocket
  *
@@ -48,30 +50,34 @@ public class TeaWebSocket extends AbstractWebSocket {
 			close(WebSockets.ABNORMAL_AUTOMATIC_CLOSE_CODE);
 		}
 		try {
-			open(super.getUrl());
+			open(super.getUrl(), super.getProtocols());
 		} catch (final Throwable exception) {
 			throw new WebSocketException("Unable to open the web socket.", exception);
 		}
 	}
 
 	/** @param url used to create the web socket. */
-	protected void open(final String url) {
+	protected void open(final String url, final List<String> protocols) {
 		if (url == null) {
 			throw new WebSocketException("URL cannot be null.");
 		}
 		try {
-			createWebSocket(url);
+			createWebSocket(url, protocols);
 		} catch (final Throwable exception) {
 			throw new WebSocketException("Unable to connect.", exception);
 		}
 	}
 
 	/** @param url used to create the native web socket. */
-	protected void createWebSocket(String url) {
+	protected void createWebSocket(String url, List<String> protocols) {
 		if (ws != null) {
 			ws.close(WebSocketCloseCode.AWAY);
 		}
-		ws = new WebSocket(url);
+		if (protocols == null || protocols.isEmpty()) {
+			ws = new WebSocket(url);
+		} else {
+			ws = new WebSocket(url, protocols.toArray(new String[protocols.size()]));
+		}
 		ws.onOpen(event -> {
 			onOpen();
 		});

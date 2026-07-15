@@ -18,6 +18,6 @@ public class TeaVMWebLauncher {
         config.height = 0;
         config.showDownloadLogs = true;
 
-        new WebApplication(WebSocketDemoSelector.createDefaultSelector(), config);
+        new WebApplication(WebSocketDemoSelector.createDefaultBrowserSelectorWithLocalWss(), config);
     }
 }

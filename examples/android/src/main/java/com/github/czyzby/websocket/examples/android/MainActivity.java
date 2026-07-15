@@ -13,8 +13,8 @@ import com.github.czyzby.websocket.impl.NvWebSocket;
 
 /** Standard Android launcher for the websocket example. */
 public class MainActivity extends AndroidApplication {
-    private static final String LOCAL_PMDEFLATE_ENDPOINT = "ws://host-machine-ip:8787/";
-    private static final String LOCAL_SECURE_PMDEFLATE_ENDPOINT = "wss://host-machine-ip:8787/";
+    private static final String LOCAL_PMDEFLATE_ENDPOINT = "ws://10.0.2.2:8787/";
+    private static final String LOCAL_SECURE_PMDEFLATE_ENDPOINT = "wss://10.0.2.2:8787/";
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {

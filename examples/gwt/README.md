@@ -68,7 +68,8 @@ You can also use the `Dev Mode On` bookmarklet from the code server page, but th
 - `superDev` only starts the GWT code server. It does not replace the static file server.
 - `examples/gwt/war/` is a generated intermediate directory used during GWT compilation.
 - `examples/gwt/build/` is also generated output.
-- The GWT launcher opens a selector with `Normal WSS Echo` and `Local permessage-deflate` options.
+- The GWT launcher opens a selector with `Normal WSS Echo`, `Local permessage-deflate`, and `Local WSS permessage-deflate` options.
 - The `Local permessage-deflate` option defaults to `ws://127.0.0.1:8787/` so it can talk to `:examples:server-demo-pmdeflate` during local testing.
+- The `Local WSS permessage-deflate` option defaults to `wss://127.0.0.1:8787/`; browser TLS validation still applies, so trust the local certificate in the browser before testing.
 - Use the `Settings` button in the demo to switch `ws/wss` and edit the target address for other machines or endpoints.
 - Verified locally with JDK 21.

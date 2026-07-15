@@ -16,6 +16,6 @@ public class GwtLauncher extends GwtApplication {
     @Override
     public ApplicationListener createApplicationListener() {
         GwtWebSockets.initiate();
-        return WebSocketDemoSelector.createDefaultSelector();
+        return WebSocketDemoSelector.createDefaultBrowserSelectorWithLocalWss();
     }
 }

@@ -40,6 +40,7 @@ Wasm:
 
 - The TeaVM builder writes output under `examples/teavm-web/build/dist`.
 - The launcher initializes `TeaWebSockets` and then starts the TeaVM web application.
-- The launcher opens a selector with `Normal WSS Echo` and `Local permessage-deflate` options.
+- The launcher opens a selector with `Normal WSS Echo`, `Local permessage-deflate`, and `Local WSS permessage-deflate` options.
 - The `Local permessage-deflate` option defaults to `ws://127.0.0.1:8787/`, which lets it talk to a local `:examples:server-demo-pmdeflate` server.
+- The `Local WSS permessage-deflate` option defaults to `wss://127.0.0.1:8787/`; browser TLS validation still applies, so trust the local certificate in the browser before testing.
 - Browser websocket APIs do not expose extension negotiation details to TeaVM web, so the demo logs the request while negotiated extensions remain unavailable for this backend.

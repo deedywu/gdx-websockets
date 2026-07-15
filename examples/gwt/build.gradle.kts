@@ -1,3 +1,4 @@
+import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.Sync
 
 plugins {
@@ -8,9 +9,8 @@ val gdxVersion: String by rootProject.extra
 val gwtVersion: String by rootProject.extra
 
 val gwtCompiler by configurations.creating
-val serverSourceSet = sourceSets.create("server") {
-    java.srcDir("src/server/java")
-}
+val serverSourceSet: SourceSet = sourceSets.create("server")
+serverSourceSet.java.srcDir("src/server/java")
 
 configurations[serverSourceSet.implementationConfigurationName].extendsFrom(configurations["implementation"])
 configurations[serverSourceSet.runtimeOnlyConfigurationName].extendsFrom(configurations["runtimeOnly"])

@@ -34,9 +34,10 @@ self-signed certificate under `examples/server-demo-pmdeflate/build/cert`.
 
 The desktop, GWT, Android, iOS, TeaVM web, TeaVM desktop-c, TeaVM Android, and TeaVM iOS launchers open a shared selector with `Normal WSS Echo` and `Local permessage-deflate` options.
 The desktop, GWT, iOS simulator, TeaVM web, TeaVM desktop-c, and TeaVM iOS simulator `Local permessage-deflate` option uses `ws://127.0.0.1:8787/` for local testing.
-The Android and TeaVM Android `Local permessage-deflate` option uses the placeholder `ws://host-machine-ip:8787/` for the same local server.
+The Android and TeaVM Android `Local permessage-deflate` option uses `ws://10.0.2.2:8787/` for Android Emulator access to the same host machine server.
+The GWT and TeaVM web launchers also expose `Local WSS permessage-deflate`, but browser TLS validation still applies and the local certificate must be trusted by the browser first.
 The desktop, Android, RoboVM iOS, TeaVM Android, TeaVM iOS, and TeaVM desktop-c launchers also expose `Local WSS permessage-deflate` for testing the same server through a self-signed local `wss://` connection. That option is test-only and disables TLS certificate and hostname validation on supported native backends.
-Replace `host-machine-ip` with your host machine LAN IP, or use the demo UI to switch to another reachable endpoint.
+For a real Android device, use the demo UI to replace `10.0.2.2` with your host machine LAN IP and run the local server on an address reachable from the device.
 For a real iOS or TeaVM iOS device, use the demo UI to replace `127.0.0.1` with your host machine LAN IP.
 Type text, press `Enter` to send, `F2` to edit connection settings, `F5` to reconnect, and `Esc` to clear the input buffer.
 
