@@ -4,10 +4,14 @@ import com.github.czyzby.websocket.WebSockets;
 import com.github.czyzby.websocket.data.WebSocketCloseCode;
 import com.github.czyzby.websocket.data.WebSocketException;
 import com.github.czyzby.websocket.data.WebSocketState;
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.typedarrays.client.ArrayBufferNative;
 import com.google.gwt.typedarrays.client.Int8ArrayNative;
 import com.google.gwt.typedarrays.shared.ArrayBuffer;
 import com.google.gwt.typedarrays.shared.Int8Array;
+
+import java.util.List;
 
 /** Default web socket implementation for GWT applications. Implementation loosely based on
  * com.sksamuel.gwt.websockets.Websocket class - improved with binary data support and current state reporting.
@@ -30,31 +34,42 @@ public class GwtWebSocket extends AbstractWebSocket {
             close(WebSockets.ABNORMAL_AUTOMATIC_CLOSE_CODE);
         }
         try {
-            open(super.getUrl());
+            open(super.getUrl(), super.getProtocols());
         } catch (final Throwable exception) {
             throw new WebSocketException("Unable to open the web socket.", exception);
         }
     }
 
     /** @param url used to create the web socket. */
-    protected void open(final String url) {
+    protected void open(final String url, final List<String> protocols) {
         if (url == null) {
             throw new WebSocketException("URL cannot be null.");
         }
         try {
-            createWebSocket(url);
+            createWebSocket(url, createProtocolsArray(protocols));
         } catch (final Throwable exception) {
             throw new WebSocketException("Unable to connect.", exception);
         }
     }
 
+    private JsArrayString createProtocolsArray(final List<String> protocols) {
+        if (protocols == null || protocols.isEmpty()) {
+            return null;
+        }
+        final JsArrayString array = JavaScriptObject.createArray().cast();
+        for (int index = 0; index < protocols.size(); index++) {
+            array.push(protocols.get(index));
+        }
+        return array;
+    }
+
     /** @param url used to create the native web socket. */
-    protected native void createWebSocket(String url)/*-{
+    protected native void createWebSocket(String url, JsArrayString protocols)/*-{
                                                      var self = this;
                                                      if(self.ws) {
                                                      self.ws.close(1001);
                                                      }
-                                                     self.ws = new WebSocket(url);
+                                                     self.ws = protocols == null ? new WebSocket(url) : new WebSocket(url, protocols);
                                                      self.ws.onopen = function() { self.@com.github.czyzby.websocket.impl.GwtWebSocket::onOpen()(); };
                                                      self.ws.binaryType = 'arraybuffer';
                                                      self.ws.onclose = function(event) { self.@com.github.czyzby.websocket.impl.GwtWebSocket::onClose(ILjava/lang/String;)(event.code, event.reason); };

@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 int gdx_teavm_ws_ios_supported(void);
-int64_t gdx_teavm_ws_ios_create(const char* url, int insecure_tls);
+int64_t gdx_teavm_ws_ios_create(const char* url, const char* protocols, int insecure_tls);
 int gdx_teavm_ws_ios_state(int64_t handle);
 int gdx_teavm_ws_ios_send_text(int64_t handle, const char* text);
 int gdx_teavm_ws_ios_close(int64_t handle, int code, const char* reason);

@@ -5,7 +5,7 @@ import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
 
 val groupId = "com.github.deedywu.gdx-websockets"
-val libraryVersion = "2.0.6-rc1"
+val libraryVersion = "2.0.7"
 
 extra["GROUPID"] = groupId
 extra["VERSION"] = libraryVersion
@@ -14,7 +14,7 @@ extra["gdxVersion"] = "1.14.2"
 extra["nvVersion"] = "2.14"
 extra["roboVMVersion"] = "2.3.24"
 extra["teavmVersion"] = "0.15.0"
-extra["gdxTeaVMVersion"] = "1.5.6"
+extra["gdxTeaVMVersion"] = "1.6.0"
 extra["gwtVersion"] = "2.11.0"
 
 allprojects {
@@ -47,7 +47,7 @@ allprojects {
     }
 
     pluginManager.withPlugin("java") {
-        val javaRelease = if (currentProject.name.startsWith("teavm")) 11 else 8
+        val javaRelease = if (currentProject.name.startsWith("teavm")) 17 else 8
 
         currentProject.extensions.configure<JavaPluginExtension> {
             sourceCompatibility = JavaVersion.toVersion(javaRelease)

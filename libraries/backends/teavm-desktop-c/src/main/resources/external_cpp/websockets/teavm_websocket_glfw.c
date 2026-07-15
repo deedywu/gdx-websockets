@@ -129,6 +129,22 @@ static WCHAR* teavm_ws_utf8_to_wide(const char* value) {
     return result;
 }
 
+static WCHAR* teavm_ws_protocol_headers_to_wide(const char* protocols) {
+    if(protocols == NULL || protocols[0] == '\0') {
+        return NULL;
+    }
+    const char* prefix = "Sec-WebSocket-Protocol: ";
+    size_t header_length = strlen(prefix) + strlen(protocols) + 3;
+    char* header = (char*)calloc(header_length, sizeof(char));
+    if(header == NULL) {
+        return NULL;
+    }
+    snprintf(header, header_length, "%s%s\r\n", prefix, protocols);
+    WCHAR* wide_header = teavm_ws_utf8_to_wide(header);
+    free(header);
+    return wide_header;
+}
+
 static int teavm_ws_starts_with_ignore_case(const char* value, const char* prefix) {
     if(value == NULL || prefix == NULL) {
         return 0;
@@ -372,7 +388,7 @@ int gdx_teavm_ws_glfw_supported(void) {
     return 1;
 }
 
-int64_t gdx_teavm_ws_glfw_create(const char* url, int insecure_tls) {
+int64_t gdx_teavm_ws_glfw_create(const char* url, const char* protocols, int insecure_tls) {
     teavm_ws_set_error(NULL);
     TeavmWsHandle* handle = (TeavmWsHandle*)calloc(1, sizeof(TeavmWsHandle));
     if(handle == NULL) {
@@ -434,8 +450,21 @@ int64_t gdx_teavm_ws_glfw_create(const char* url, int insecure_tls) {
         return 0;
     }
 
-    if(!WinHttpSendRequest(handle->request, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
-            WINHTTP_NO_REQUEST_DATA, 0, 0, 0)) {
+    WCHAR* protocol_headers = teavm_ws_protocol_headers_to_wide(protocols);
+    if(protocols != NULL && protocols[0] != '\0' && protocol_headers == NULL) {
+        teavm_ws_set_error("Failed to prepare websocket protocol header.");
+        gdx_teavm_ws_glfw_destroy((int64_t)(intptr_t)handle);
+        return 0;
+    }
+
+    BOOL request_sent = WinHttpSendRequest(handle->request,
+            protocol_headers == NULL ? WINHTTP_NO_ADDITIONAL_HEADERS : protocol_headers,
+            protocol_headers == NULL ? 0 : (DWORD)-1L,
+            WINHTTP_NO_REQUEST_DATA, 0, 0, 0);
+    if(protocol_headers != NULL) {
+        free(protocol_headers);
+    }
+    if(!request_sent) {
         teavm_ws_set_last_windows_error("Failed to send websocket handshake request.");
         gdx_teavm_ws_glfw_destroy((int64_t)(intptr_t)handle);
         return 0;
@@ -632,6 +661,7 @@ int gdx_teavm_ws_glfw_last_error(void* target_buffer, int target_buffer_capacity
 #endif
 
 typedef struct CURL CURL;
+typedef struct curl_slist curl_slist;
 typedef int CURLcode;
 typedef int CURLoption;
 typedef long long curl_off_t;
@@ -654,6 +684,7 @@ struct curl_ws_frame {
 #define CURLOPT_URL (CURLOPTTYPE_STRINGPOINT + 2)
 #define CURLOPT_ERRORBUFFER (CURLOPTTYPE_OBJECTPOINT + 10)
 #define CURLOPT_USERAGENT (CURLOPTTYPE_STRINGPOINT + 18)
+#define CURLOPT_HTTPHEADER (CURLOPTTYPE_OBJECTPOINT + 23)
 #define CURLOPT_SSL_VERIFYPEER (CURLOPTTYPE_LONG + 64)
 #define CURLOPT_SSL_VERIFYHOST (CURLOPTTYPE_LONG + 81)
 #define CURLOPT_CONNECT_ONLY (CURLOPTTYPE_LONG + 141)
@@ -675,6 +706,7 @@ typedef struct TeavmWsEvent {
 
 typedef struct TeavmWsHandle {
     CURL* curl;
+    curl_slist* headers;
     pthread_t thread;
     int thread_started;
     pthread_mutex_t event_lock;
@@ -697,6 +729,8 @@ typedef CURLcode (*TeavmCurlWsRecvFn)(CURL* curl, void* buffer, size_t buflen, s
                                       const struct curl_ws_frame** meta);
 typedef CURLcode (*TeavmCurlWsSendFn)(CURL* curl, const void* buffer, size_t buflen, size_t* sent,
                                       curl_off_t fragsize, unsigned int flags);
+typedef curl_slist* (*TeavmCurlSlistAppendFn)(curl_slist* list, const char* string);
+typedef void (*TeavmCurlSlistFreeAllFn)(curl_slist* list);
 
 typedef struct TeavmCurlApi {
     void* library;
@@ -710,6 +744,8 @@ typedef struct TeavmCurlApi {
     TeavmCurlEasyStrerrorFn easy_strerror;
     TeavmCurlWsRecvFn ws_recv;
     TeavmCurlWsSendFn ws_send;
+    TeavmCurlSlistAppendFn slist_append;
+    TeavmCurlSlistFreeAllFn slist_free_all;
 } TeavmCurlApi;
 
 static char g_last_error[2048];
@@ -724,7 +760,9 @@ static TeavmCurlApi g_curl = {
         .easy_perform = NULL,
         .easy_strerror = NULL,
         .ws_recv = NULL,
-        .ws_send = NULL
+        .ws_send = NULL,
+        .slist_append = NULL,
+        .slist_free_all = NULL
 };
 
 static void teavm_ws_set_error(const char* message) {
@@ -994,7 +1032,9 @@ static int teavm_ws_linux_load_curl(void) {
             || !teavm_ws_load_symbol(library, (void**)&g_curl.easy_perform, "curl_easy_perform")
             || !teavm_ws_load_symbol(library, (void**)&g_curl.easy_strerror, "curl_easy_strerror")
             || !teavm_ws_load_symbol(library, (void**)&g_curl.ws_recv, "curl_ws_recv")
-            || !teavm_ws_load_symbol(library, (void**)&g_curl.ws_send, "curl_ws_send")) {
+            || !teavm_ws_load_symbol(library, (void**)&g_curl.ws_send, "curl_ws_send")
+            || !teavm_ws_load_symbol(library, (void**)&g_curl.slist_append, "curl_slist_append")
+            || !teavm_ws_load_symbol(library, (void**)&g_curl.slist_free_all, "curl_slist_free_all")) {
         dlclose(library);
         g_curl.library = NULL;
         g_curl.load_state = -1;
@@ -1038,6 +1078,39 @@ static int teavm_ws_easy_setopt_long(TeavmWsHandle* handle, CURLoption option, l
     }
     teavm_ws_set_error_from_curl(handle, result, fallback_message);
     return 0;
+}
+
+static int teavm_ws_easy_setopt_pointer(TeavmWsHandle* handle, CURLoption option, void* value,
+                                        const char* fallback_message) {
+    handle->error_buffer[0] = '\0';
+    CURLcode result = g_curl.easy_setopt(handle->curl, option, value);
+    if(result == CURLE_OK) {
+        return 1;
+    }
+    teavm_ws_set_error_from_curl(handle, result, fallback_message);
+    return 0;
+}
+
+static int teavm_ws_apply_protocol_header(TeavmWsHandle* handle, const char* protocols) {
+    if(protocols == NULL || protocols[0] == '\0') {
+        return 1;
+    }
+    const char* prefix = "Sec-WebSocket-Protocol: ";
+    size_t header_length = strlen(prefix) + strlen(protocols) + 1;
+    char* header = (char*)calloc(header_length, sizeof(char));
+    if(header == NULL) {
+        teavm_ws_set_error("Failed to allocate websocket protocol header.");
+        return 0;
+    }
+    snprintf(header, header_length, "%s%s", prefix, protocols);
+    handle->headers = g_curl.slist_append(handle->headers, header);
+    free(header);
+    if(handle->headers == NULL) {
+        teavm_ws_set_error("Failed to configure websocket protocol header.");
+        return 0;
+    }
+    return teavm_ws_easy_setopt_pointer(handle, CURLOPT_HTTPHEADER, handle->headers,
+            "Failed to set websocket protocol header.");
 }
 
 static void teavm_ws_finalize_close(TeavmWsHandle* handle, int close_code, const char* reason, size_t reason_length) {
@@ -1120,7 +1193,7 @@ int gdx_teavm_ws_glfw_supported(void) {
     return teavm_ws_linux_load_curl();
 }
 
-int64_t gdx_teavm_ws_glfw_create(const char* url, int insecure_tls) {
+int64_t gdx_teavm_ws_glfw_create(const char* url, const char* protocols, int insecure_tls) {
     teavm_ws_set_error(NULL);
     if(url == NULL || url[0] == '\0') {
         teavm_ws_set_error("A websocket URL is required.");
@@ -1157,6 +1230,11 @@ int64_t gdx_teavm_ws_glfw_create(const char* url, int insecure_tls) {
                     "Failed to enable libcurl websocket mode.")
             || !teavm_ws_easy_setopt_long(handle, CURLOPT_TIMEOUT_MS, 10000L,
                     "Failed to configure websocket connection timeout.")) {
+        gdx_teavm_ws_glfw_destroy((int64_t)(intptr_t)handle);
+        return 0;
+    }
+
+    if(!teavm_ws_apply_protocol_header(handle, protocols)) {
         gdx_teavm_ws_glfw_destroy((int64_t)(intptr_t)handle);
         return 0;
     }
@@ -1333,6 +1411,10 @@ void gdx_teavm_ws_glfw_destroy(int64_t handle_value) {
         g_curl.easy_cleanup(handle->curl);
         handle->curl = NULL;
     }
+    if(handle->headers != NULL) {
+        g_curl.slist_free_all(handle->headers);
+        handle->headers = NULL;
+    }
 
     pthread_mutex_lock(&handle->event_lock);
     teavm_ws_free_event_queue(handle);
@@ -1349,7 +1431,12 @@ int gdx_teavm_ws_glfw_last_error(void* target_buffer, int target_buffer_capacity
 #else
 
 int gdx_teavm_ws_glfw_supported(void) { return 0; }
-int64_t gdx_teavm_ws_glfw_create(const char* url, int insecure_tls) { (void)url; (void)insecure_tls; return 0; }
+int64_t gdx_teavm_ws_glfw_create(const char* url, const char* protocols, int insecure_tls) {
+    (void)url;
+    (void)protocols;
+    (void)insecure_tls;
+    return 0;
+}
 int gdx_teavm_ws_glfw_state(int64_t handle) { (void)handle; return 3; }
 int gdx_teavm_ws_glfw_send_text(int64_t handle, const char* text) { (void)handle; (void)text; return 0; }
 int gdx_teavm_ws_glfw_close(int64_t handle, int code, const char* reason) { (void)handle; (void)code; (void)reason; return 0; }

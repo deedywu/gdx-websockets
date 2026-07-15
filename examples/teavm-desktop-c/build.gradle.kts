@@ -7,6 +7,7 @@ plugins {
 }
 
 val gdxVersion: String by rootProject.extra
+val gdxTeaVMVersion: String by rootProject.extra
 
 extensions.configure<JavaPluginExtension> {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -20,7 +21,7 @@ tasks.withType<JavaCompile>().configureEach {
 dependencies {
     implementation("com.badlogicgames.gdx:gdx:$gdxVersion")
     implementation(project(":examples:core"))
-    implementation("com.github.xpenatan.gdx-teavm:backend-glfw:-SNAPSHOT")
+    implementation("com.github.xpenatan.gdx-teavm:backend-glfw:$gdxTeaVMVersion")
     implementation(project(":libraries:backends:teavm-desktop-c"))
 }
 

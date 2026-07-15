@@ -9,6 +9,10 @@ import com.github.czyzby.websocket.data.WebSocketException;
 import com.github.czyzby.websocket.data.WebSocketState;
 import com.github.czyzby.websocket.serialization.Serializer;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Abstract base for {@link WebSocket} implementations.
  *
@@ -17,6 +21,7 @@ import com.github.czyzby.websocket.serialization.Serializer;
 public abstract class AbstractWebSocket implements WebSocket {
     private final String url;
     private final Array<WebSocketListener> listeners = new Array<WebSocketListener>(2); // Default 16 is likely too big.
+    private List<String> protocols;
     protected boolean useTcpNoDelay = true;
     protected boolean verifyHostname = false;
     protected boolean usePerMessageDeflate = false;
@@ -51,6 +56,31 @@ public abstract class AbstractWebSocket implements WebSocket {
     @Override
     public void setPerMessageDeflate(final boolean perMessageDeflate) {
         usePerMessageDeflate = perMessageDeflate;
+    }
+
+    @Override
+    public void setProtocols(final List<String> protocols) {
+        this.protocols = normalizeProtocols(protocols);
+    }
+
+    @Override
+    public List<String> getProtocols() {
+        return protocols;
+    }
+
+    /** @return value for the Sec-WebSocket-Protocol request header, or null when no protocols were configured. */
+    protected String getProtocolsHeaderValue() {
+        if (protocols == null || protocols.isEmpty()) {
+            return null;
+        }
+        final StringBuilder builder = new StringBuilder();
+        for (int index = 0; index < protocols.size(); index++) {
+            if (index > 0) {
+                builder.append(", ");
+            }
+            builder.append(protocols.get(index));
+        }
+        return builder.toString();
     }
 
     public void setUseTcpNoDelay(boolean useTcpNoDelay) {
@@ -153,6 +183,43 @@ public abstract class AbstractWebSocket implements WebSocket {
     @Override
     public String getUrl() {
         return url;
+    }
+
+    private static List<String> normalizeProtocols(final List<String> protocols) {
+        if (protocols == null || protocols.isEmpty()) {
+            return null;
+        }
+        final ArrayList<String> normalizedProtocols = new ArrayList<String>(protocols.size());
+        for (final String protocol : protocols) {
+            if (protocol == null) {
+                continue;
+            }
+            final String trimmedProtocol = protocol.trim();
+            if (trimmedProtocol.length() == 0) {
+                continue;
+            }
+            validateProtocol(trimmedProtocol);
+            normalizedProtocols.add(trimmedProtocol);
+        }
+        return normalizedProtocols.isEmpty() ? null : Collections.unmodifiableList(normalizedProtocols);
+    }
+
+    private static void validateProtocol(final String protocol) {
+        for (int index = 0; index < protocol.length(); index++) {
+            if (!isProtocolCharacter(protocol.charAt(index))) {
+                throw new WebSocketException("Invalid websocket protocol: " + protocol);
+            }
+        }
+    }
+
+    private static boolean isProtocolCharacter(final char character) {
+        return character >= '0' && character <= '9'
+                || character >= 'A' && character <= 'Z'
+                || character >= 'a' && character <= 'z'
+                || character == '!' || character == '#' || character == '$' || character == '%'
+                || character == '&' || character == '\'' || character == '*' || character == '+'
+                || character == '-' || character == '.' || character == '^' || character == '_'
+                || character == '`' || character == '|' || character == '~';
     }
 
     @Override

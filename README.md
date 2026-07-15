@@ -104,7 +104,7 @@ dependencies {
 
 Specify the `wsVersion` in the `gradle.properties` file in the root directory. Use a tag, branch snapshot, or commit published from this fork:
 
-`wsVersion=2.0.6-rc1`
+`wsVersion=2.0.7`
 
 `wsVersion=master-SNAPSHOT`
 
@@ -112,6 +112,19 @@ TeaVM web artifact names changed in `2.0.2`:
 
 - `2.0.1` uses `com.github.deedywu.gdx-websockets:teavm:$wsVersion`
 - `2.0.2` and newer use `com.github.deedywu.gdx-websockets:teavm-web:$wsVersion`
+
+### WebSocket subprotocols
+
+Set websocket subprotocols before `connect()` when a server expects a `Sec-WebSocket-Protocol` handshake value:
+
+```java
+void connectSocket() {
+    WebSockets.newSocket("wss://example.com/socket")
+            .withProtocols("graphql-transport-ws", "graphql-ws")
+            .withPerMessageDeflate(true)
+            .connect();
+}
+```
 
 ### Extensions
 
@@ -264,15 +277,18 @@ address, or temporary hostname mismatch:
 Do not use this helper for production traffic. Backends that cannot override TLS validation, such as browser-backed
 websocket implementations, reject this helper with a `WebSocketException`. The common JVM backend, TeaVM Android
 backend, TeaVM iOS backend, and TeaVM desktop-c backend support it.
+For GWT/html and TeaVM web examples, the browser's own TLS validation still applies: use `ws://` for local testing, or
+install and trust a local certificate that matches the `wss://` host before using the local WSS option.
 
 ## Changes
 
-### 2.0.6-rc1
+### 2.0.7
 
-- Marked the insecure local WSS helper APIs as deprecated for IDE visibility while keeping them available for explicit development-only testing.
-- Switched the shared permessage-deflate demos to an explicit insecure-TLS flag instead of inferring insecure behavior from the endpoint scheme.
-- Clarified the local WSS selector option and example documentation so it explicitly states that it targets the demo server's self-signed certificate and disables TLS certificate / hostname validation on supported native backends.
-- Added the BouncyCastle dependencies required for self-signed certificate generation on modern JDKs so `:examples:server-demo-pmdeflate:run` works reliably from the root Gradle build.
+- Added websocket subprotocol support and fluent `WebSocket.with...` configuration helpers.
+- Updated available `gdx-teavm` integrations to `1.6.0`, TeaVM `0.15.0`, and Java 17 for TeaVM modules.
+- Improved local WSS/permessage-deflate examples and documentation across desktop, browser, Android, iOS, and TeaVM targets.
+- Marked insecure local WSS helpers as deprecated while keeping them available for explicit development-only testing.
+- Fixed local demo build and IDE rough edges, including BouncyCastle certificate generation and the GWT source set declaration.
 
 ### 2.0.5
 

@@ -39,7 +39,7 @@ public class WebSocketsAndroidBridge {
     private WebSocketsAndroidBridge() {
     }
 
-    public static boolean createSocket(long handle, String url, boolean usePerMessageDeflate, boolean insecureTls) {
+    public static boolean createSocket(long handle, String url, String protocolsHeader, boolean usePerMessageDeflate, boolean insecureTls) {
         lastError = "";
         if(url == null || url.trim().isEmpty()) {
             lastError = "A websocket URL is required.";
@@ -47,6 +47,7 @@ public class WebSocketsAndroidBridge {
         }
         try {
             WebSocket socket = (insecureTls ? INSECURE_FACTORY : FACTORY).createSocket(url.trim());
+            addProtocols(socket, protocolsHeader);
             if(usePerMessageDeflate) {
                 socket.addExtension(WebSocketExtension.PERMESSAGE_DEFLATE);
             }
@@ -64,6 +65,19 @@ public class WebSocketsAndroidBridge {
         } catch(RuntimeException e) {
             lastError = describeThrowable(e);
             return false;
+        }
+    }
+
+    private static void addProtocols(WebSocket socket, String protocolsHeader) {
+        if(protocolsHeader == null || protocolsHeader.trim().isEmpty()) {
+            return;
+        }
+        String[] protocols = protocolsHeader.split(",");
+        for(String protocol : protocols) {
+            String trimmedProtocol = protocol.trim();
+            if(!trimmedProtocol.isEmpty()) {
+                socket.addProtocol(trimmedProtocol);
+            }
         }
     }
 

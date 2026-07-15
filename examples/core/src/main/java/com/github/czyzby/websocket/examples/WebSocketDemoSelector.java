@@ -91,6 +91,17 @@ public class WebSocketDemoSelector extends ApplicationAdapter implements InputPr
                         localSecurePerMessageDeflateFactory));
     }
 
+    public static WebSocketDemoSelector createDefaultBrowserSelectorWithLocalWss() {
+        return new WebSocketDemoSelector(
+                normalWssEcho(normalWssEchoFactory(true)),
+                localPerMessageDeflate(PerMessageDeflateWebSocketDemo.DEFAULT_PMDEFLATE_ENDPOINT,
+                        perMessageDeflateFactory(PerMessageDeflateWebSocketDemo.DEFAULT_PMDEFLATE_ENDPOINT, true)),
+                localSecurePerMessageDeflateForBrowser(
+                        PerMessageDeflateWebSocketDemo.DEFAULT_SECURE_PMDEFLATE_ENDPOINT,
+                        perMessageDeflateFactory(PerMessageDeflateWebSocketDemo.DEFAULT_SECURE_PMDEFLATE_ENDPOINT,
+                                true)));
+    }
+
     public static DemoFactory normalWssEchoFactory(final boolean touchControlsEnabled) {
         return new DemoFactory() {
             @Override
@@ -126,6 +137,12 @@ public class WebSocketDemoSelector extends ApplicationAdapter implements InputPr
     public static DemoOption localSecurePerMessageDeflate(final String endpoint, final DemoFactory factory) {
         return new DemoOption("Local WSS permessage-deflate", endpoint,
                 "Test only: local demo self-signed cert; skips TLS cert/hostname checks.", factory);
+    }
+
+    public static DemoOption localSecurePerMessageDeflateForBrowser(final String endpoint,
+            final DemoFactory factory) {
+        return new DemoOption("Local WSS permessage-deflate", endpoint,
+                "Browser TLS validation still applies; trust the local cert before testing.", factory);
     }
 
     @Override

@@ -55,6 +55,23 @@ static NSString* teavm_ws_ios_string(const char* value) {
     return string == nil ? @"" : string;
 }
 
+static NSArray<NSString*>* teavm_ws_ios_protocols(const char* value) {
+    NSString* text = [teavm_ws_ios_string(value) stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    if(text.length == 0) {
+        return nil;
+    }
+    NSArray<NSString*>* parts = [text componentsSeparatedByString:@","];
+    NSMutableArray<NSString*>* protocols = [NSMutableArray arrayWithCapacity:parts.count];
+    NSCharacterSet* whitespace = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+    for(NSString* part in parts) {
+        NSString* protocol = [part stringByTrimmingCharactersInSet:whitespace];
+        if(protocol.length > 0) {
+            [protocols addObject:protocol];
+        }
+    }
+    return protocols.count == 0 ? nil : protocols;
+}
+
 static int teavm_ws_ios_utf8_length(NSString* value) {
     if(value == nil || value.length == 0) {
         return 0;
@@ -95,7 +112,7 @@ static NSString* teavm_ws_ios_describe_error(NSError* error, NSString* fallback)
 
 @implementation GdxTeaVMIOSWebSocket
 
-- (instancetype)initWithURL:(NSURL*)url insecureTls:(BOOL)insecureTls {
+- (instancetype)initWithURL:(NSURL*)url protocols:(NSArray<NSString*>*)protocols insecureTls:(BOOL)insecureTls {
     self = [super init];
     if(self != nil) {
         _events = [NSMutableArray array];
@@ -104,7 +121,9 @@ static NSString* teavm_ws_ios_describe_error(NSError* error, NSString* fallback)
         _insecureTls = insecureTls && [url.scheme.lowercaseString isEqualToString:@"wss"];
         NSURLSessionConfiguration* configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
         _session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
-        _task = [_session webSocketTaskWithURL:url];
+        _task = protocols.count > 0
+                ? [_session webSocketTaskWithURL:url protocols:protocols]
+                : [_session webSocketTaskWithURL:url];
     }
     return self;
 }
@@ -299,7 +318,7 @@ int gdx_teavm_ws_ios_supported(void) {
     return 0;
 }
 
-int64_t gdx_teavm_ws_ios_create(const char* url, int insecure_tls) {
+int64_t gdx_teavm_ws_ios_create(const char* url, const char* protocols, int insecure_tls) {
     teavm_ws_ios_set_error(NULL);
     if(!gdx_teavm_ws_ios_supported()) {
         teavm_ws_ios_set_error("NSURLSessionWebSocketTask requires iOS 13 or newer.");
@@ -320,6 +339,7 @@ int64_t gdx_teavm_ws_ios_create(const char* url, int insecure_tls) {
         }
 
         GdxTeaVMIOSWebSocket* socket = [[GdxTeaVMIOSWebSocket alloc] initWithURL:parsedURL
+                                                                      protocols:teavm_ws_ios_protocols(protocols)
                                                                      insecureTls:insecure_tls != 0];
         if(socket == nil) {
             teavm_ws_ios_set_error("Failed to create iOS websocket.");

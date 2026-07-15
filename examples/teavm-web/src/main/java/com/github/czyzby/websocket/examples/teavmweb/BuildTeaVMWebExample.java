@@ -4,7 +4,7 @@ import java.io.File;
 
 import org.teavm.vm.TeaVMOptimizationLevel;
 
-import com.github.xpenatan.gdx.teavm.backends.shared.config.compiler.TeaCompiler;
+import com.github.xpenatan.gdx.teavm.backends.shared.config.builder.TeaBuilder;
 import com.github.xpenatan.gdx.teavm.backends.web.config.backend.WebBackend;
 
 /** Builds the TeaVM web example and optionally starts the embedded web server. */
@@ -21,7 +21,7 @@ public class BuildTeaVMWebExample {
                 .setStartJettyAfterBuild(serve)
                 .setHtmlTitle("gdx-websockets teavm-web");
 
-        new TeaCompiler(backend)
+        new TeaBuilder(backend)
                 .setOptimizationLevel(TeaVMOptimizationLevel.SIMPLE)
                 .setMainClass(TeaVMWebLauncher.class.getName())
                 .setObfuscated(false)

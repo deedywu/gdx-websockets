@@ -9,8 +9,8 @@ import com.github.xpenatan.gdx.teavm.backends.android.AndroidApplication;
 import com.github.xpenatan.gdx.teavm.backends.android.AndroidApplicationConfiguration;
 
 public class WebSocketsAndroidLauncher {
-    private static final String LOCAL_PMDEFLATE_ENDPOINT = "ws://host-machine-ip:8787/";
-    private static final String LOCAL_SECURE_PMDEFLATE_ENDPOINT = "wss://host-machine-ip:8787/";
+    private static final String LOCAL_PMDEFLATE_ENDPOINT = "ws://10.0.2.2:8787/";
+    private static final String LOCAL_SECURE_PMDEFLATE_ENDPOINT = "wss://10.0.2.2:8787/";
 
     public static void main(String[] args) {
         AndroidWebSockets.initiate();
@@ -108,7 +108,7 @@ public class WebSocketsAndroidLauncher {
     private static void promptForEndpointAddressWithNativeDialog(final String address,
             final EndpointAddressReceiver receiver) {
         TeaVMAndroidTextInput.show("WebSocket Address", address,
-                "host-machine-ip:8787/", new TeaVMAndroidTextInput.Listener() {
+                "10.0.2.2:8787/", new TeaVMAndroidTextInput.Listener() {
                     @Override
                     public void input(final String text) {
                         receiver.input(text);
